@@ -1,0 +1,103 @@
+{# templates/task/_inbox_modal.html.twig #}
+
+<style>
+  .task-inbox-modal-dialog {
+    width: min(1200px, 95vw);
+    max-width: 95vw;
+  }
+
+  .task-inbox-modal-content {
+    position: relative;
+    width: 100%;
+    height: 75vh;
+    min-width: 720px;
+    min-height: 420px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow: hidden;
+  }
+
+  .task-inbox-modal-body {
+    overflow: auto;
+  }
+
+  .task-modal-resize-handle {
+    position: absolute;
+    right: 6px;
+    bottom: 6px;
+    width: 18px;
+    height: 18px;
+    cursor: nwse-resize;
+    z-index: 20;
+  }
+
+  .task-modal-resize-handle::before {
+    content: "";
+    position: absolute;
+    right: 2px;
+    bottom: 2px;
+    width: 14px;
+    height: 14px;
+    border-right: 3px solid #adb5bd;
+    border-bottom: 3px solid #adb5bd;
+    border-radius: 2px;
+  }
+
+  .task-modal-resize-handle:hover::before {
+    border-color: #dc3545;
+  }
+
+  @media (max-width: 768px) {
+    .task-inbox-modal-dialog {
+      width: auto;
+      max-width: calc(100vw - 1rem);
+      margin: .5rem auto;
+    }
+
+    .task-inbox-modal-content {
+      width: auto !important;
+      height: 80vh !important;
+      min-width: auto;
+      max-width: calc(100vw - 1rem);
+    }
+
+    .task-modal-resize-handle {
+      display: none;
+    }
+  }
+</style>
+
+<div class="modal fade" id="taskInboxModal" tabindex="-1" aria-labelledby="taskInboxModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable task-inbox-modal-dialog">
+    <div class="modal-content task-inbox-modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="taskInboxModalLabel">
+          Mes tâches en cours
+        </h5>
+
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+
+      <div class="modal-body task-inbox-modal-body">
+        <div id="taskInboxLoading" class="text-center py-4">
+          <div class="spinner-border" role="status" aria-hidden="true"></div>
+          <p class="mt-2 mb-0">Chargement des tâches…</p>
+        </div>
+
+        <div id="taskInboxContent" class="d-none"></div>
+
+        <div id="taskInboxError" class="alert alert-danger d-none mt-3" role="alert">
+          Une erreur est survenue lors du chargement des tâches.
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Fermer
+        </button>
+      </div>
+
+      <div class="task-modal-resize-handle" aria-hidden="true"></div>
+    </div>
+  </div>
+</div>

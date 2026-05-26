@@ -1,0 +1,4 @@
+open_demat_admin:
+  organization:
+    name: '%env(default::ORGANIZATION_NAME)%'
+    logo: '%env(default::ORGANIZATION_LOGO)%'

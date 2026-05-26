@@ -3,6 +3,13 @@ parameters:
   minio.bucket: '%env(MINIO_BUCKET)%'
 
   admin_url: '%env(resolve:ADMIN_URL)%'
+  organization_name: '%env(default::ORGANIZATION_NAME)%'
+  organization_logo: '%env(default::ORGANIZATION_LOGO)%'
+  cas_host: '%env(CAS_HOST)%'
+  cas_port: '%env(CAS_PORT)%'
+  cas_path: '%env(CAS_PATH)%'
+  cas_login_target: '%env(resolve:CAS_LOGIN_TARGET)%'
+  cas_gateway: '%env(bool:CAS_GATEWAY)%'
 
 imports:
   - { resource: '../app_open_demat/*/Resources/config/services.yaml', type: glob, ignore_errors: true }

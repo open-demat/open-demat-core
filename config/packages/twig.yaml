@@ -8,6 +8,8 @@ twig:
 
     globals:
         admin_url: '%admin_url%'
+        organization_name: '%organization_name%'
+        organization_logo: '%organization_logo%'
 
 
 when@test:

@@ -4,10 +4,11 @@
 {% set sidebarId = sidebar_id|default('sidebarMenu') %}
 {% set extraClasses = extra_classes|default('') %}
 {% set isMobileSidebar = (sidebarId == 'mobileSidebarMenu') %}
+{% set orgName = organization_name|default('Open Demat') %}
 
 <nav id="{{ sidebarId }}"
      class="sidebar-open-demat d-flex flex-column flex-shrink-0 text-white {{ extraClasses }}"
-     aria-label="Navigation principale Open Demat">
+     aria-label="Navigation principale {{ orgName }}">
 
   <div class="p-3 d-flex flex-column flex-grow-1">
 

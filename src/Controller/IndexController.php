@@ -37,8 +37,19 @@ class IndexController extends AbstractController
             throw new \RuntimeException("ADMIN_URL n'est pas défini dans le .env");
         }
 
-        // Redirection vers https://.../accueil
         return $this->redirect($adminUrl . '/accueil');
+    }
+
+    #[Route('/accueil', name: 'app_accueil')]
+    public function accueil(Request $request): Response
+    {
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('caslogin', [
+                '_target_path' => $request->getRequestUri(),
+            ]);
+        }
+
+        return $this->render('index/accueil.html.twig');
     }
 
     #[Route('/cas', name: 'casIndex')]

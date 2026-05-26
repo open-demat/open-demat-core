@@ -12,6 +12,7 @@ return [
     loophp\PsrHttpMessageBridgeBundle\PsrHttpMessageBridgeBundle::class => ['all' => true],
     Symfony\Bundle\MonologBundle\MonologBundle::class => ['all' => true],
     League\FlysystemBundle\FlysystemBundle::class => ['all' => true],
+    OpenDemat\AdminBundle\AdminBundle::class => ['all' => true],
 
     // Add project-specific OpenDemat\*Bundle classes here in deployment overlays.
 ];

@@ -41,7 +41,8 @@
     "symfony/validator": "^7.4",
     "symfony/var-exporter": "^7.4",
     "symfony/workflow": "^7.4",
-    "symfony/yaml": "^7.4"
+    "symfony/yaml": "^7.4",
+    "open-demat/admin-bundle": "dev-master"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
@@ -104,5 +105,10 @@
   "support": {
     "issues": "https://github.com/open-demat/open-demat-core/issues"
   },
-  "repositories": []
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://gitlab.u-pec.fr/maxime.six/open-demat-admin-bundle.git"
+    }
+  ]
 }

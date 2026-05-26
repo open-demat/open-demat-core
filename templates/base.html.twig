@@ -5,9 +5,12 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <meta charset="UTF-8"/>
-    <meta name="description" content="Portail d'administration Open Demat"/>
+    {% set orgName = organization_name|default('Open Demat') %}
+    {% set orgLogo = organization_logo|default('') %}
 
-    <title>{% block title %}Open Demat · Administration{% endblock %}</title>
+    <meta name="description" content="Portail d'administration {{ orgName }}"/>
+
+    <title>{% block title %}{{ orgName }} · Administration{% endblock %}</title>
 
     {% block stylesheets %}
       {# Bootstrap 5 #}
@@ -62,8 +65,12 @@
 
           {# Brand #}
           <a class="navbar-brand d-flex align-items-center" href="{{ path('app_home') }}">
-            <i class="bx bxs-buildings me-2" aria-hidden="true"></i>
-            <span>Portail Open Demat</span>
+            {% if orgLogo %}
+              <img src="{{ asset(orgLogo) }}" alt="" class="me-2" style="height: 28px; max-width: 42px; object-fit: contain;">
+            {% else %}
+              <i class="bx bxs-grid-alt me-2" aria-hidden="true"></i>
+            {% endif %}
+            <span>Portail {{ orgName }}</span>
           </a>
         </div>
 
@@ -161,7 +168,7 @@
       <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel">
         <div class="offcanvas-header">
           <h5 class="offcanvas-title" id="mobileSidebarLabel">
-            Portail Open Demat
+            Portail {{ orgName }}
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
         </div>
@@ -177,37 +184,13 @@
 
     {# --- MODAL BANETTE DE TÂCHES --- #}
     {% if app.user %}
-      <div class="modal fade" id="taskInboxModal" tabindex="-1" aria-labelledby="taskInboxModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="taskInboxModalLabel">
-                Mes tâches en cours
-              </h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-            </div>
-            <div class="modal-body">
-              <div id="taskInboxLoading" class="text-center py-4">
-                <div class="spinner-border" role="status" aria-hidden="true"></div>
-                <p class="mt-2 mb-0">Chargement des tâches…</p>
-              </div>
-              <div id="taskInboxContent" class="d-none"></div>
-              <div id="taskInboxError" class="alert alert-danger d-none mt-3" role="alert">
-                Une erreur est survenue lors du chargement des tâches.
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      {% include 'task/_inbox_modal.html.twig' %}
     {% endif %}
 
     {# --- FOOTER FIXE --- #}
     <footer class="bg-white border-top py-2 position-fixed bottom-0 start-0 end-0" role="contentinfo">
       <div class="container text-center small">
-        <span>Open Demat &copy; {{ "now"|date("Y") }}. Tous droits réservés.</span>
+        <span>{{ orgName }} &copy; {{ "now"|date("Y") }}. Tous droits réservés.</span>
       </div>
     </footer>
 
@@ -289,102 +272,12 @@
             });
           });
 
-          // --- Tâches : boutons (desktop + mobile) ---
-          const taskButtons = Array.from(document.querySelectorAll('[data-task-inbox-btn]'));
-          const taskModal = document.getElementById('taskInboxModal');
-
-          const desktopBadge = document.getElementById('taskInboxCount');
-          const mobileBadge  = document.getElementById('taskInboxCountMobile');
-
-          function setBadgeCount(count) {
-            [desktopBadge, mobileBadge].forEach(badge => {
-              if (!badge) return;
-              if (count > 0) {
-                badge.textContent = count;
-                badge.classList.remove('d-none');
-              } else {
-                badge.classList.add('d-none');
-              }
-            });
-          }
-
-          function getCountUrl() {
-            const btn = taskButtons.find(b => b.getAttribute('data-count-url'));
-            return btn ? btn.getAttribute('data-count-url') : null;
-          }
-
-          function refreshTaskCount() {
-            const countUrl = getCountUrl();
-            if (!countUrl) return;
-
-            fetch(countUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-              .then(r => r.ok ? r.json() : Promise.reject(r.status))
-              .then(data => setBadgeCount(parseInt(data.count ?? 0, 10)))
-              .catch(() => { /* silencieux */ });
-          }
-
-          // 1) au chargement
-          refreshTaskCount();
-          // 2) refresh périodique (toutes les 30s)
-          setInterval(refreshTaskCount, 30000);
-
-          // --- Banette de tâches (AJAX) ---
-          if (taskModal) {
-            const content = document.getElementById('taskInboxContent');
-            const loader = document.getElementById('taskInboxLoading');
-            const errorBox = document.getElementById('taskInboxError');
-
-            taskModal.addEventListener('show.bs.modal', (event) => {
-              // Le bouton qui a ouvert le modal (desktop OU mobile)
-              const trigger = event.relatedTarget;
-              const url = trigger && trigger.getAttribute ? trigger.getAttribute('data-url') : null;
-
-              const finalUrl = url || (taskButtons[0] ? taskButtons[0].getAttribute('data-url') : null);
-              if (!finalUrl) return;
-
-              // reset UI
-              if (content) {
-                content.classList.add('d-none');
-                content.innerHTML = '';
-              }
-              if (errorBox) {
-                errorBox.classList.add('d-none');
-              }
-              if (loader) {
-                loader.classList.remove('d-none');
-              }
-
-              fetch(finalUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                .then(response => {
-                  if (!response.ok) throw new Error('HTTP ' + response.status);
-                  return response.text();
-                })
-                .then(html => {
-                  if (loader) loader.classList.add('d-none');
-                  if (content) {
-                    content.innerHTML = html;
-                    content.classList.remove('d-none');
-                  }
-
-                  // resync badge depuis la liste affichée (simple et fiable)
-                  const tmp = document.createElement('div');
-                  tmp.innerHTML = html;
-                  const rows = tmp.querySelectorAll('tbody tr');
-                  setBadgeCount(rows.length);
-                })
-                .catch(err => {
-                  console.error('Erreur chargement tâches :', err);
-                  if (loader) loader.classList.add('d-none');
-                  if (errorBox) errorBox.classList.remove('d-none');
-                });
-            });
-
-            taskModal.addEventListener('hidden.bs.modal', () => {
-              refreshTaskCount();
-            });
-          }
         });
       </script>
+
+      {% if app.user %}
+        <script src="{{ asset('assets/js/task-inbox.js') }}"></script>
+      {% endif %}
     {% endblock %}
   </body>
 </html>

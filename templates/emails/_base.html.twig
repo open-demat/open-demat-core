@@ -27,8 +27,8 @@
                     <td align="left" style="padding:0;">
                       {# admin_url doit être fourni côté mailer context, comme dans CSST #}
                       <img
-                        src="{{ admin_url ~ '/assets/img/logo-open-demat.jpg' }}"
-                        alt="Open Demat"
+                        src="{{ organization_logo|default('') ? admin_url ~ '/' ~ organization_logo : admin_url ~ '/assets/img/open-demat-imgs/system.svg' }}"
+                        alt="{{ organization_name|default('Open Demat') }}"
                         width="160"
                         style="display:block;border:0;outline:none;text-decoration:none;max-width:160px;height:auto;">
                     </td>
@@ -94,7 +94,7 @@
               <td style="padding:14px 6px 0 6px;">
                 <div style="font-family:Arial,Helvetica,sans-serif;color:#666666;line-height:1.5;font-size:12px;text-align:left;">
                   {% block footer %}
-                    <p style="margin:0 0 6px 0;">La plateforme de dématérialisation de l’Open Demat</p>
+                    <p style="margin:0 0 6px 0;">La plateforme de dématérialisation de {{ organization_name|default('Open Demat') }}</p>
                   {% endblock %}
                 </div>
               </td>
