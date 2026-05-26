@@ -1,0 +1,45 @@
+{# templates/task/_inbox_list.html.twig #}
+
+{% if tasks is empty %}
+  <p class="text-muted mb-0">Aucune tâche en cours pour le moment.</p>
+{% else %}
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Processus</th>
+          <th>Objet</th>
+          <th>Tâche</th>
+          <th>Assignée à</th>
+          <th>Créée le</th>
+          <th class="text-end">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for task in tasks %}
+        <tr>
+          <td>{{ task.processName }}</td>
+          <td>{{ task.summary }}</td>
+          <td>{{ task.taskName }}</td>
+          <td>
+            {% if task.user %}
+              {{ task.user.userIdentifier }}
+            {% elseif task.roleName %}
+              {{ task.roleName }}
+            {% else %}
+              <span class="text-muted">Non assignée</span>
+            {% endif %}
+          </td>
+          <td>{{ task.createdAt|date('d/m/Y H:i') }}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-primary"
+                href="{{ task.actionRoute }}">
+                Aller
+            </a>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}

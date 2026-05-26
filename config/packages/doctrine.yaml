@@ -1,0 +1,22 @@
+doctrine:
+  dbal:
+    url: '%env(resolve:DATABASE_URL)%'
+    charset: utf8mb4
+    server_version: '8.0'
+    schema_filter: '~^(?!f3sct\.|messenger_messages$|doctrine_migration_versions$)~'
+    types:
+      uuid: Symfony\Bridge\Doctrine\Types\UuidType
+    mapping_types:
+      uuid: uuid
+
+  orm:
+    naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+    auto_generate_proxy_classes: true
+    enable_lazy_ghost_objects: true
+    mappings:
+      OpenDematCore:
+        is_bundle: false
+        type: attribute
+        dir: '%kernel.project_dir%/src/Entity'
+        prefix: 'OpenDemat\Core\Entity'
+        alias: OpenDematCore

@@ -1,0 +1,5 @@
+{
+  "_comment": "Copy this file to composer.open_demat.json and add your process bundles/repositories there. The public template is intentionally empty so the core can be installed on its own.",
+  "require": {},
+  "repositories": []
+}

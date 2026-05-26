@@ -1,0 +1,15 @@
+twig:
+    default_path: '%kernel.project_dir%/templates'
+    paths:
+        '%kernel.project_dir%/app_open_demat': OpenDemat   # tous tes bundles dans app_open_demat/
+
+    form_themes:
+        - 'form/open_demat_form_theme.html.twig'
+
+    globals:
+        admin_url: '%admin_url%'
+
+
+when@test:
+    twig:
+        strict_variables: true

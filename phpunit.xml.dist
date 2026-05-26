@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         failOnWarning="false"
+>
+    <php>
+        <env name="APP_ENV" value="test"/>
+        <env name="APP_SECRET" value="test_secret_1234567890"/>
+        <env name="KERNEL_CLASS" value="OpenDemat\Core\Kernel"/>
+        <!-- Pour IndexController -->
+        <env name="ADMIN_URL" value="https://admin.test"/>
+        <!-- Pour Doctrine (SQLite fichier) -->
+        <env name="DATABASE_URL" value="postgresql://postgres:password@127.0.0.1:5432/process_db_test?charset=utf8"/>
+        <!-- Pour SecurityController::llogout -->
+        <env name="CAS_LOGOUT_URL" value="https://cas.test/logout"/>
+    </php>
+
+    <testsuites>
+        <testsuite name="Project Test Suite">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

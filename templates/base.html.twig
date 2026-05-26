@@ -1,0 +1,390 @@
+{# templates/base.html.twig #}
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta http-equiv="x-ua-compatible" content="ie=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta charset="UTF-8"/>
+    <meta name="description" content="Portail d'administration Open Demat"/>
+
+    <title>{% block title %}Open Demat · Administration{% endblock %}</title>
+
+    {% block stylesheets %}
+      {# Bootstrap 5 #}
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+      {# Icônes (optionnel) #}
+      <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+      {# DataTables + Bootstrap 5 + Buttons (si tu en as besoin partout) #}
+      <link rel="stylesheet" href="https://cdn.datatables.net/2.0.3/css/dataTables.bootstrap5.min.css">
+      <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.0.1/css/buttons.bootstrap5.min.css">
+
+      {# Style commun Open Demat #}
+      <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet"/>
+    {% endblock %}
+
+    <script>
+      (function () {
+        try {
+          const key = 'open-demat_sidebar_collapsed';
+          const collapsed = localStorage.getItem(key) === 'true';
+          if (collapsed) {
+            document.documentElement.classList.add('open-demat-sidebar-collapsed');
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+  </head>
+
+  <body class="min-vh-100 d-flex flex-column">
+    {# Lien d’évitement pour RGAA #}
+    <a href="#main" class="skip-link">Aller au contenu</a>
+
+    {% set hideNavbarRoutes = ['app_login'] %}
+    {% set withSidebar = app.request.attributes.get('_route') not in hideNavbarRoutes %}
+
+    {# --- TOPBAR (toujours visible quand on a une sidebar) --- #}
+    {% if withSidebar %}
+    <nav id="open-dematTopbar" class="navbar navbar-light bg-white border-bottom sticky-top">
+      <div class="container-fluid">
+
+        <div class="d-flex align-items-center gap-2">
+          {# Bouton desktop pour cacher/afficher la sidebar (à gauche du header) #}
+          <button type="button"
+                  id="toggleSidebarBtn"
+                  class="btn btn-sm btn-outline-secondary only-desktop-834 align-items-center"
+                  aria-label="Réduire le menu de navigation"
+                  aria-expanded="true">
+            <i class="bx bx-chevrons-left" aria-hidden="true"></i>
+          </button>
+
+          {# Brand #}
+          <a class="navbar-brand d-flex align-items-center" href="{{ path('app_home') }}">
+            <i class="bx bxs-buildings me-2" aria-hidden="true"></i>
+            <span>Portail Open Demat</span>
+          </a>
+        </div>
+
+        <div class="ms-auto d-flex align-items-center gap-2">
+          {# Bouton burger pour mobile (offcanvas) #}
+          <button class="btn btn-outline-secondary hide-desktop-834"
+                  type="button"
+                  data-bs-toggle="offcanvas"
+                  data-bs-target="#mobileSidebar"
+                  aria-controls="mobileSidebar"
+                  aria-label="Ouvrir le menu">
+            <i class="bx bx-menu"></i>
+          </button>
+
+          {# Zone actions TOPBAR uniquement desktop #}
+          <div class="only-desktop-834-flex align-items-center gap-2">
+            {% if app.user %}
+              {# Bouton banette de tâches #}
+              <button type="button"
+                      class="btn btn-sm btn-outline-secondary position-relative"
+                      id="taskInboxBtn"
+                      data-task-inbox-btn="1"
+                      data-bs-toggle="modal"
+                      data-bs-target="#taskInboxModal"
+                      data-url="{{ path('core_tasks_inbox') }}"
+                      data-count-url="{{ path('core_tasks_inbox_count') }}">
+                <i class="bx bx-task" aria-hidden="true"></i>
+                <span class="d-none d-sm-inline">Tâches</span>
+                {# Badge de nombre #}
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none"
+                      id="taskInboxCount">
+                  0
+                </span>
+              </button>
+
+              <div class="dropdown">
+                <button
+                  class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2"
+                  type="button"
+                  id="userMenuDropdown"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  <i class="bx bx-user-circle" aria-hidden="true"></i>
+                  <span class="d-none d-sm-inline">{{ app.user.userIdentifier }}</span>
+                </button>
+
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuDropdown">
+                  <li>
+                    <a class="dropdown-item" href="{{ path('open_demat_core_profile_index') }}">
+                      <i class="bx bx-id-card me-2" aria-hidden="true"></i>
+                      Mon profil
+                    </a>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <a class="dropdown-item text-danger" href="{{ path('app_logout') }}">
+                      <i class="bx bx-log-out me-2" aria-hidden="true"></i>
+                      Déconnexion
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            {% endif %}
+          </div>
+
+        </div>
+      </div>
+    </nav>
+    {% endif %}
+
+    <div class="{{ withSidebar ? 'app-shell d-flex flex-grow-1' : 'flex-grow-1' }}">
+      {% if withSidebar %}
+        {# Sidebar fixe sur md+ #}
+        {% include '_partials/_navbar.html.twig' with {
+          sidebar_id: 'sidebarMenu',
+          extra_classes: 'sidebar-desktop-834'
+        } %}
+      {% endif %}
+
+      <main
+        id="main"
+        role="main"
+        aria-live="polite"
+        class="{{ withSidebar ? 'flex-grow-1 p-4 app-content' : 'p-0' }}"
+      >
+        <div class="container-fluid" style="padding-bottom: 64px;">
+          {% block body %}{% endblock %}
+        </div>
+      </main>
+    </div>
+
+    {# --- OFFCANVAS pour mobile --- #}
+    {% if withSidebar %}
+      <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="mobileSidebarLabel">
+            Portail Open Demat
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+          {# On réutilise la même partial, avec d'autres classes / id #}
+          {% include '_partials/_navbar.html.twig' with {
+            sidebar_id: 'mobileSidebarMenu',
+            extra_classes: 'h-100'
+          } %}
+        </div>
+      </div>
+    {% endif %}
+
+    {# --- MODAL BANETTE DE TÂCHES --- #}
+    {% if app.user %}
+      <div class="modal fade" id="taskInboxModal" tabindex="-1" aria-labelledby="taskInboxModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="taskInboxModalLabel">
+                Mes tâches en cours
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+              <div id="taskInboxLoading" class="text-center py-4">
+                <div class="spinner-border" role="status" aria-hidden="true"></div>
+                <p class="mt-2 mb-0">Chargement des tâches…</p>
+              </div>
+              <div id="taskInboxContent" class="d-none"></div>
+              <div id="taskInboxError" class="alert alert-danger d-none mt-3" role="alert">
+                Une erreur est survenue lors du chargement des tâches.
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {# --- FOOTER FIXE --- #}
+    <footer class="bg-white border-top py-2 position-fixed bottom-0 start-0 end-0" role="contentinfo">
+      <div class="container text-center small">
+        <span>Open Demat &copy; {{ "now"|date("Y") }}. Tous droits réservés.</span>
+      </div>
+    </footer>
+
+    {% block javascripts %}
+      {# jQuery pour DataTables (Bootstrap 5 n'en a pas besoin) #}
+      <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+      {# Bootstrap 5 JS #}
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+
+      {# DataTables + Bootstrap 5 + Buttons #}
+      <script src="https://cdn.datatables.net/2.0.3/js/dataTables.min.js"></script>
+      <script src="https://cdn.datatables.net/2.0.3/js/dataTables.bootstrap5.min.js"></script>
+      <script src="https://cdn.datatables.net/buttons/3.0.1/js/dataTables.buttons.min.js"></script>
+      <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.bootstrap5.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+      <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.html5.min.js"></script>
+      <script src="https://cdn.datatables.net/buttons/3.0.1/js/buttons.print.min.js"></script>
+
+      <script>
+        window.addEventListener('DOMContentLoaded', () => {
+
+          // --- Topbar height -> CSS var (pour sidebar fixed) ---
+          const topbar = document.getElementById('open-dematTopbar');
+
+          function syncTopbarHeight(){
+            if (!topbar) return;
+            const h = Math.ceil(topbar.getBoundingClientRect().height);
+            document.documentElement.style.setProperty('--topbar-h', h + 'px');
+          }
+
+          syncTopbarHeight();
+          window.addEventListener('resize', syncTopbarHeight);
+
+          // --- Toggle sidebar desktop + persistance ---
+          const SIDEBAR_STORAGE_KEY = 'open-demat_sidebar_collapsed';
+
+          const toggleBtn = document.getElementById('toggleSidebarBtn');
+          const appShell = document.querySelector('.app-shell');
+
+          if (toggleBtn && appShell) {
+            const icon = toggleBtn.querySelector('i');
+
+            // sync initial (déjà appliqué sur <html>)
+            const collapsed = document.documentElement.classList.contains('open-demat-sidebar-collapsed');
+            if (collapsed) appShell.classList.add('sidebar-collapsed');
+            toggleBtn.setAttribute('aria-expanded', String(!collapsed));
+            if (icon) {
+              icon.classList.toggle('bx-chevrons-left', !collapsed);
+              icon.classList.toggle('bx-chevrons-right', collapsed);
+            }
+
+            toggleBtn.addEventListener('click', () => {
+              document.documentElement.classList.toggle('open-demat-sidebar-collapsed');
+              const collapsedNow = document.documentElement.classList.contains('open-demat-sidebar-collapsed');
+
+              appShell.classList.toggle('sidebar-collapsed', collapsedNow);
+              localStorage.setItem(SIDEBAR_STORAGE_KEY, String(collapsedNow));
+
+              toggleBtn.setAttribute('aria-expanded', String(!collapsedNow));
+              if (icon) {
+                icon.classList.toggle('bx-chevrons-left', !collapsedNow);
+                icon.classList.toggle('bx-chevrons-right', collapsedNow);
+              }
+            });
+          }
+
+          // --- Init DataTables générique ---
+          document.querySelectorAll('.datatable').forEach(tbl => {
+            new DataTable(tbl, {
+              layout: {
+                topStart: 'search',
+                topEnd: 'pageLength',
+                bottomStart: 'info',
+                bottomEnd: 'paging'
+              },
+              buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
+            });
+          });
+
+          // --- Tâches : boutons (desktop + mobile) ---
+          const taskButtons = Array.from(document.querySelectorAll('[data-task-inbox-btn]'));
+          const taskModal = document.getElementById('taskInboxModal');
+
+          const desktopBadge = document.getElementById('taskInboxCount');
+          const mobileBadge  = document.getElementById('taskInboxCountMobile');
+
+          function setBadgeCount(count) {
+            [desktopBadge, mobileBadge].forEach(badge => {
+              if (!badge) return;
+              if (count > 0) {
+                badge.textContent = count;
+                badge.classList.remove('d-none');
+              } else {
+                badge.classList.add('d-none');
+              }
+            });
+          }
+
+          function getCountUrl() {
+            const btn = taskButtons.find(b => b.getAttribute('data-count-url'));
+            return btn ? btn.getAttribute('data-count-url') : null;
+          }
+
+          function refreshTaskCount() {
+            const countUrl = getCountUrl();
+            if (!countUrl) return;
+
+            fetch(countUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+              .then(r => r.ok ? r.json() : Promise.reject(r.status))
+              .then(data => setBadgeCount(parseInt(data.count ?? 0, 10)))
+              .catch(() => { /* silencieux */ });
+          }
+
+          // 1) au chargement
+          refreshTaskCount();
+          // 2) refresh périodique (toutes les 30s)
+          setInterval(refreshTaskCount, 30000);
+
+          // --- Banette de tâches (AJAX) ---
+          if (taskModal) {
+            const content = document.getElementById('taskInboxContent');
+            const loader = document.getElementById('taskInboxLoading');
+            const errorBox = document.getElementById('taskInboxError');
+
+            taskModal.addEventListener('show.bs.modal', (event) => {
+              // Le bouton qui a ouvert le modal (desktop OU mobile)
+              const trigger = event.relatedTarget;
+              const url = trigger && trigger.getAttribute ? trigger.getAttribute('data-url') : null;
+
+              const finalUrl = url || (taskButtons[0] ? taskButtons[0].getAttribute('data-url') : null);
+              if (!finalUrl) return;
+
+              // reset UI
+              if (content) {
+                content.classList.add('d-none');
+                content.innerHTML = '';
+              }
+              if (errorBox) {
+                errorBox.classList.add('d-none');
+              }
+              if (loader) {
+                loader.classList.remove('d-none');
+              }
+
+              fetch(finalUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(response => {
+                  if (!response.ok) throw new Error('HTTP ' + response.status);
+                  return response.text();
+                })
+                .then(html => {
+                  if (loader) loader.classList.add('d-none');
+                  if (content) {
+                    content.innerHTML = html;
+                    content.classList.remove('d-none');
+                  }
+
+                  // resync badge depuis la liste affichée (simple et fiable)
+                  const tmp = document.createElement('div');
+                  tmp.innerHTML = html;
+                  const rows = tmp.querySelectorAll('tbody tr');
+                  setBadgeCount(rows.length);
+                })
+                .catch(err => {
+                  console.error('Erreur chargement tâches :', err);
+                  if (loader) loader.classList.add('d-none');
+                  if (errorBox) errorBox.classList.remove('d-none');
+                });
+            });
+
+            taskModal.addEventListener('hidden.bs.modal', () => {
+              refreshTaskCount();
+            });
+          }
+        });
+      </script>
+    {% endblock %}
+  </body>
+</html>

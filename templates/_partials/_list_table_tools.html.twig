@@ -1,0 +1,329 @@
+{# templates/_partials/_list_table_tools.html.twig #}
+
+{% set uid = uid|default('lt_' ~ random()) %}
+
+{# config attendu :
+  {
+    items: ".js-list-item",
+    cards: ".js-list-card" (optionnel),
+    cardsContainer: "#cardsWrap" (optionnel),
+    tableWrap: "#tableWrap" (optionnel),
+    emptyState: "#emptyState" (optionnel),
+    search: {
+      input: "#searchInputId",
+      fieldsAttr: "data-search" (string searchable)
+    },
+    filter: {
+      attr: "data-status",
+      buttons: ".js-filter-btn",
+      label: ".js-filter-label" (optionnel),
+      countSpans: ".js-count" (optionnel),
+      default: "ALL"
+    },
+    sort: {
+      headers: ".js-sort",
+      defaultKey: "id",
+      defaultDir: "desc"
+    }
+  }
+#}
+
+{% set config = config|default({}) %}
+{% set wrapperId = wrapper_id|default(uid ~ '_tools') %}
+{% set searchId = search_id|default(uid ~ '_search') %}
+{% set defaultFilter = config.filter.default|default('ALL') %}
+{% set placeholder = search_placeholder|default('Rechercher…') %}
+
+<div id="{{ wrapperId }}"
+     class="card mb-3"
+     data-list-tools="{{ uid }}"
+     data-config='{{ config|json_encode|raw }}'>
+  <div class="card-body p-3 p-md-4">
+
+    <div class="d-flex flex-column flex-lg-row gap-3 align-items-lg-center justify-content-between">
+
+      {# SEARCH #}
+      <div class="flex-grow-1">
+        <label for="{{ searchId }}" class="form-label fw-semibold mb-1">Recherche</label>
+        <input
+          id="{{ searchId }}"
+          type="search"
+          class="form-control"
+          placeholder="{{ placeholder }}"
+          autocomplete="off"
+        >
+        <div class="form-text">
+          Astuce : tu peux chercher par mots-clés (destinataire, service, statut, etc.)
+        </div>
+      </div>
+
+      {# FILTER BUTTONS #}
+      {% if filters is defined and filters is not empty %}
+        <div class="flex-shrink-0">
+          <div class="small text-muted mb-1">Filtrer :</div>
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+
+            {% for f in filters %}
+              {% set code = f[0] %}
+              {% set label = f[1] %}
+              {% set pillClass = f[2]|default('btn-outline-primary') %}
+              {% set active = (code == defaultFilter) %}
+
+              <button
+                type="button"
+                class="btn btn-sm {{ active ? 'btn-primary active' : pillClass }} js-filter-btn"
+                data-filter="{{ code }}"
+                aria-pressed="{{ active ? 'true' : 'false' }}"
+              >
+                {{ label }}
+                <span class="ms-2 small opacity-75 js-count" data-count="{{ code }}">(0)</span>
+              </button>
+            {% endfor %}
+
+          </div>
+
+          {% if filter_label_selector is defined and filter_label_selector %}
+            <div class="mt-2 small text-muted">
+              Filtre actif : <span class="fw-semibold js-filter-label">—</span>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  function initListTools() {
+    const root = document.querySelector('[data-list-tools="{{ uid }}"]');
+    if (!root) return;
+
+    const config = JSON.parse(root.getAttribute('data-config') || '{}');
+
+    const searchInput = document.getElementById('{{ searchId }}');
+    const itemsSelector = config.items || '.js-list-item';
+    const cardsSelector = config.cards || null;
+
+    const emptyState = config.emptyState ? document.querySelector(config.emptyState) : null;
+
+    const filterAttr = (config.filter && config.filter.attr) ? config.filter.attr : 'data-status';
+    const filterButtonsSelector = (config.filter && config.filter.buttons) ? config.filter.buttons : '.js-filter-btn';
+    const filterLabelSelector = (config.filter && config.filter.label) ? config.filter.label : '.js-filter-label';
+    const countSelector = (config.filter && config.filter.countSpans) ? config.filter.countSpans : '.js-count';
+    const defaultFilter = (config.filter && config.filter.default) ? config.filter.default : 'ALL';
+
+    const sortHeadersSelector = (config.sort && config.sort.headers) ? config.sort.headers : '.js-sort';
+    let currentSortKey = (config.sort && config.sort.defaultKey) ? config.sort.defaultKey : null;
+    let currentSortDir = (config.sort && config.sort.defaultDir) ? config.sort.defaultDir : 'asc';
+
+    function getAllItems() {
+      const tableItems = Array.from(document.querySelectorAll(itemsSelector));
+      const cardItems = cardsSelector ? Array.from(document.querySelectorAll(cardsSelector)) : [];
+      return { tableItems, cardItems };
+    }
+
+    function normalize(s) {
+      return (s || '').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+    }
+
+    function buildSearchString(el) {
+      const ds = el.getAttribute('data-search');
+      if (ds && ds.trim().length) return normalize(ds);
+      return normalize(el.textContent || '');
+    }
+
+    function computeCounts() {
+      const { tableItems, cardItems } = getAllItems();
+      const base = tableItems.length ? tableItems : cardItems;
+
+      const counts = new Map();
+      counts.set('ALL', base.length);
+
+      base.forEach(el => {
+        const v = el.getAttribute(filterAttr) || 'UNKNOWN';
+        counts.set(v, (counts.get(v) || 0) + 1);
+      });
+
+      document.querySelectorAll(countSelector).forEach(span => {
+        const code = span.getAttribute('data-count');
+        const n = counts.get(code) || 0;
+        span.textContent = '(' + n + ')';
+      });
+    }
+
+    function setActiveButton(filter) {
+      document.querySelectorAll(filterButtonsSelector).forEach(btn => {
+        const isActive = btn.getAttribute('data-filter') === filter;
+        btn.classList.toggle('btn-primary', isActive);
+        btn.classList.toggle('active', isActive);
+
+        if (!isActive) {
+          if (!btn.classList.contains('btn-outline-primary') &&
+              !btn.classList.contains('btn-outline-secondary') &&
+              !btn.classList.contains('btn-outline-success') &&
+              !btn.classList.contains('btn-outline-danger') &&
+              !btn.classList.contains('btn-outline-warning') &&
+              !btn.classList.contains('btn-outline-info')) {
+            btn.classList.add('btn-outline-primary');
+          }
+          btn.classList.remove('btn-primary');
+        } else {
+          btn.classList.remove('btn-outline-primary','btn-outline-secondary','btn-outline-success','btn-outline-danger','btn-outline-warning','btn-outline-info');
+        }
+
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
+    }
+
+    function updateFilterLabel(filter) {
+      const labelEl = document.querySelector(filterLabelSelector);
+      if (!labelEl) return;
+
+      const btn = Array.from(document.querySelectorAll(filterButtonsSelector))
+        .find(b => b.getAttribute('data-filter') === filter);
+
+      labelEl.textContent = btn ? btn.textContent.replace(/\(\d+\)\s*$/, '').trim() : filter;
+    }
+
+    function applyFilterAndSearch(filter) {
+      const q = normalize(searchInput ? searchInput.value : '');
+      const { tableItems, cardItems } = getAllItems();
+
+      function applyOn(list) {
+        let visible = 0;
+        list.forEach(el => {
+          const v = el.getAttribute(filterAttr) || '';
+          const okFilter = (filter === 'ALL') || (v === filter);
+          const okSearch = !q || buildSearchString(el).includes(q);
+
+          const show = okFilter && okSearch;
+          el.classList.toggle('d-none', !show);
+          if (show) visible++;
+        });
+        return visible;
+      }
+
+      const visibleTable = applyOn(tableItems);
+      const visibleCards = applyOn(cardItems);
+      const totalVisible = (tableItems.length ? visibleTable : 0) + (cardItems.length ? visibleCards : 0);
+
+      if (emptyState) {
+        emptyState.classList.toggle('d-none', totalVisible !== 0);
+      }
+
+      updateFilterLabel(filter);
+    }
+
+    function parseValue(el, key, type) {
+      const v = el.getAttribute('data-sort-' + key) ?? el.getAttribute('data-' + key) ?? '';
+      if (type === 'number') {
+        const n = parseFloat((v || '').toString().replace(',', '.'));
+        return isNaN(n) ? 0 : n;
+      }
+      if (type === 'date') {
+        const d = new Date(v);
+        const t = d.getTime();
+        return isNaN(t) ? 0 : t;
+      }
+      return normalize(v);
+    }
+
+    function sortList(list, key, dir, type) {
+      const mult = (dir === 'desc') ? -1 : 1;
+      return list.slice().sort((a, b) => {
+        const va = parseValue(a, key, type);
+        const vb = parseValue(b, key, type);
+        if (va < vb) return -1 * mult;
+        if (va > vb) return  1 * mult;
+        return 0;
+      });
+    }
+
+    function applySort(key, dir, type) {
+      const { tableItems, cardItems } = getAllItems();
+
+      if (tableItems.length) {
+        const tbody = tableItems[0].closest('tbody');
+        if (tbody) {
+          const sorted = sortList(tableItems, key, dir, type);
+          sorted.forEach(tr => tbody.appendChild(tr));
+        }
+      }
+
+      if (cardItems.length) {
+        const container = config.cardsContainer ? document.querySelector(config.cardsContainer) : cardItems[0].parentElement;
+        if (container) {
+          const sorted = sortList(cardItems, key, dir, type);
+          sorted.forEach(card => container.appendChild(card));
+        }
+      }
+    }
+
+    function setSortIndicators(activeTh) {
+      document.querySelectorAll(sortHeadersSelector).forEach(th => {
+        th.classList.remove('text-decoration-underline');
+        th.removeAttribute('aria-sort');
+      });
+      if (activeTh) {
+        activeTh.classList.add('text-decoration-underline');
+        activeTh.setAttribute('aria-sort', currentSortDir === 'asc' ? 'ascending' : 'descending');
+      }
+    }
+
+    document.querySelectorAll(filterButtonsSelector).forEach(btn => {
+      btn.addEventListener('click', () => {
+        const filter = btn.getAttribute('data-filter') || 'ALL';
+        setActiveButton(filter);
+        applyFilterAndSearch(filter);
+      });
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        const active = (document.querySelector(filterButtonsSelector + '.active') || {})?.getAttribute?.('data-filter') || defaultFilter;
+        applyFilterAndSearch(active);
+      });
+    }
+
+    document.querySelectorAll(sortHeadersSelector).forEach(th => {
+      th.style.cursor = 'pointer';
+      th.addEventListener('click', () => {
+        const key = th.getAttribute('data-sort-key');
+        if (!key) return;
+
+        const type = th.getAttribute('data-sort-type') || 'text';
+
+        if (currentSortKey === key) currentSortDir = (currentSortDir === 'asc') ? 'desc' : 'asc';
+        else { currentSortKey = key; currentSortDir = 'asc'; }
+
+        applySort(currentSortKey, currentSortDir, type);
+        setSortIndicators(th);
+
+        const active = (document.querySelector(filterButtonsSelector + '.active') || {})?.getAttribute?.('data-filter') || defaultFilter;
+        applyFilterAndSearch(active);
+      });
+    });
+
+    // init (maintenant que le DOM est prêt)
+    computeCounts();
+    setActiveButton(defaultFilter);
+    applyFilterAndSearch(defaultFilter);
+
+    if (currentSortKey) {
+      const th = Array.from(document.querySelectorAll(sortHeadersSelector))
+        .find(x => x.getAttribute('data-sort-key') === currentSortKey);
+      applySort(currentSortKey, currentSortDir, th ? (th.getAttribute('data-sort-type') || 'text') : 'text');
+      setSortIndicators(th || null);
+    }
+  }
+
+  // IMPORTANT: attendre que le tableau/cards soient dans le DOM
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initListTools);
+  } else {
+    initListTools();
+  }
+})();
+</script>

@@ -1,0 +1,12 @@
+doctrine:
+  orm:
+    auto_generate_proxy_classes: true
+
+    # Important : on ne mappe QUE le Core en env test
+    mappings:
+      OpenDematCore:
+        is_bundle: false
+        type: attribute
+        dir: '%kernel.project_dir%/src/Entity'
+        prefix: 'OpenDemat\Core\Entity'
+        alias: OpenDematCore

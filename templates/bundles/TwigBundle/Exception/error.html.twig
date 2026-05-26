@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Erreur {{ status_code }}
+{% endblock %}
+
+{% block body %}
+<div class="container py-5 text-center">
+
+  <h1 class="display-3 text-danger fw-bold">
+    {{ status_code }}
+  </h1>
+
+  <h2 class="mb-3">
+    Une erreur est survenue
+  </h2>
+
+  <p class="text-muted">
+    {{ status_text }}
+  </p>
+
+  <div class="mt-4 d-flex justify-content-center gap-3">
+    <a href="{{ path('app_home') }}" class="btn btn-danger">
+      Retour à l’accueil
+    </a>
+
+    <a href="javascript:history.back()" class="btn btn-outline-secondary">
+      Page précédente
+    </a>
+  </div>
+
+</div>
+{% endblock %}

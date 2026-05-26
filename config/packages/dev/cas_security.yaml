@@ -1,0 +1,4 @@
+security:
+    providers:
+        cas_user_provider:
+            id: OpenDemat\Core\Security\CasToUserProvider

@@ -1,0 +1,42 @@
+cas:
+    base_url: '%env(CAS_BASE_URL)%'
+    protocol:
+        login:
+            path: /login
+            allowed_parameters:
+                - service
+                - renew
+                - gateway
+            default_parameters:
+                service: casIndex
+        serviceValidate:
+            path: /p3/serviceValidate
+            allowed_parameters:
+                - service
+                - pgtUrl
+                - renew
+                - format
+            default_parameters:
+                format: JSON
+                #pgtUrl: cas_bundle_proxy_callback
+        logout:
+            path: /llogout
+            allowed_parameters:
+                - service
+            default_parameters:
+                service: casIndex
+        proxy:
+            path: /proxy
+            allowed_parameters:
+                - targetService
+                - pgt
+        proxyValidate:
+            path: /p3/proxyValidate
+            allowed_parameters:
+                - service
+                - ticket
+                - pgtUrl
+                - format
+            default_parameters:
+                format: JSON
+                #pgtUrl: cas_bundle_proxy_callback

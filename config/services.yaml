@@ -1,0 +1,153 @@
+# config/services.yaml
+parameters:
+  minio.bucket: '%env(MINIO_BUCKET)%'
+
+  admin_url: '%env(resolve:ADMIN_URL)%'
+
+imports:
+  - { resource: '../app_open_demat/*/Resources/config/services.yaml', type: glob, ignore_errors: true }
+
+when@test:
+  services:
+    security.user.provider.concrete.cas_user_provider:
+      alias: security.user.provider.concrete.app_user_provider
+      public: false
+
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+  
+  OpenDemat\Core\:
+    resource: '../src/*'
+    exclude:
+      - '../src/DependencyInjection/'
+      - '../src/Entity/'
+      - '../src/Kernel.php'
+
+  OpenDemat\Core\Routing\PerBundleAttributeLoader:
+      arguments:
+        $projectDir: '%kernel.project_dir%'
+      tags: [routing.loader]
+  
+  OpenDemat\Core\Security\CasToUserProvider:
+      arguments:
+          $userRepository: '@OpenDemat\Core\Repository\UserRepository'
+  
+  # ------- PSR-17 (Nyholm) -------
+  Nyholm\Psr7\Factory\Psr17Factory: ~
+
+  Psr\Http\Message\RequestFactoryInterface: '@Nyholm\Psr7\Factory\Psr17Factory'
+  Psr\Http\Message\ResponseFactoryInterface: '@Nyholm\Psr7\Factory\Psr17Factory'
+  Psr\Http\Message\ServerRequestFactoryInterface: '@Nyholm\Psr7\Factory\Psr17Factory'
+  Psr\Http\Message\StreamFactoryInterface: '@Nyholm\Psr7\Factory\Psr17Factory'
+  Psr\Http\Message\UploadedFileFactoryInterface: '@Nyholm\Psr7\Factory\Psr17Factory'
+  Psr\Http\Message\UriFactoryInterface: '@Nyholm\Psr7\Factory\Psr17Factory'
+
+  # ------- Adaptateur attendu par ecphp/cas-lib -------
+  loophp\psr17\Psr17:
+    arguments:
+      - '@Psr\Http\Message\RequestFactoryInterface'
+      - '@Psr\Http\Message\ResponseFactoryInterface'
+      - '@Psr\Http\Message\ServerRequestFactoryInterface'
+      - '@Psr\Http\Message\StreamFactoryInterface'
+      - '@Psr\Http\Message\UploadedFileFactoryInterface'
+      - '@Psr\Http\Message\UriFactoryInterface'
+
+  loophp\psr17\Psr17Interface: '@loophp\psr17\Psr17'
+
+  # ------- Bridge PSR-7 <-> HttpFoundation -------
+  # HttpFoundation <- PSR-7 (pour convertir PSR-7 vers HttpFoundation)
+  Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory: ~
+  Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface: '@Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory'
+
+  # PSR-7 <- HttpFoundation (l'autre sens, utile si besoin)
+  Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory:
+    arguments:
+      - '@Psr\Http\Message\RequestFactoryInterface'
+      - '@Psr\Http\Message\ResponseFactoryInterface'
+      - '@Psr\Http\Message\StreamFactoryInterface'
+      - '@Psr\Http\Message\UploadedFileFactoryInterface'
+
+  # --- Client PSR-18 basé sur Symfony HttpClient ---
+  Symfony\Component\HttpClient\Psr18Client:
+    arguments:
+      - '@http_client'                             # Symfony\Contracts\HttpClient\HttpClientInterface
+      - '@Psr\Http\Message\RequestFactoryInterface'
+      - '@Psr\Http\Message\StreamFactoryInterface'
+
+  # Alias pour l’interface PSR-18 attendue par cas-lib
+  Psr\Http\Client\ClientInterface: '@Symfony\Component\HttpClient\Psr18Client'
+
+  OpenDemat\Core\Hub\HubAppSynchronizer:
+    arguments:
+      $em: '@doctrine.orm.entity_manager'
+      $urlGenerator: '@router'
+
+  OpenDemat\Core\Hub\HubRegistry:
+    arguments:
+      $apps: !tagged_iterator 'open_demat.hub.app_definition'
+
+  OpenDemat\Core\Twig\HubExtension:
+    arguments:
+      - '@OpenDemat\Core\Hub\HubRegistry'
+    tags:
+      - 'twig.extension'
+  
+  OpenDemat\Core\Mailer\:
+    resource: '../src/Mailer/'
+    autowire: true
+    autoconfigure: true
+  
+  OpenDemat\Core\Mailer\Handler\SendMailMessageHandler:
+    arguments:
+      $defaultFrom: '%env(string:MAILER_FROM)%'
+  
+  Aws\S3\S3Client:
+    factory: ['Aws\S3\S3Client', 'factory']
+    arguments:
+      -
+        version: 'latest'
+        region: '%env(MINIO_REGION)%'
+        endpoint: '%env(MINIO_ENDPOINT)%'
+        use_path_style_endpoint: '%env(bool:MINIO_USE_PATH_STYLE)%'
+        credentials:
+          key: '%env(MINIO_ACCESS_KEY)%'
+          secret: '%env(MINIO_SECRET_KEY)%'
+          
+  OpenDemat\Core\Service\AttachmentService:
+    arguments:
+      $minioBucket: '%minio.bucket%'
+  
+  OpenDemat\Core\Pdf\PdfRendererInterface:
+    alias: OpenDemat\Core\Pdf\PdfRenderer
+
+  OpenDemat\Core\Pdf\Engine\PdfEngineInterface:
+    class: OpenDemat\Core\Pdf\Engine\DompdfEngine
+
+  OpenDemat\Core\Pdf\PdfRenderer:
+    arguments:
+      $twig: '@twig'
+      $engine: '@OpenDemat\Core\Pdf\Engine\PdfEngineInterface'
+  
+  OpenDemat\Core\EventSubscriber\SessionVersionSubscriber:
+        arguments:
+            $tokenStorage: '@security.token_storage'
+            $requestStack: '@request_stack'
+            $router: '@router'
+            $userRepository: '@OpenDemat\Core\Repository\UserRepository'
+        tags:
+            - { name: kernel.event_subscriber }
+
+  OpenDemat\Core\AuditLog\AuditLoggerInterface:
+        alias: OpenDemat\Core\AuditLog\AuditLogger
+
+  OpenDemat\Core\AuditLog\AuditLogger:
+      arguments:
+          $entityManager: '@doctrine.orm.entity_manager'
+          $security: '@security.helper'
+          $requestStack: '@request_stack'
+
+  OpenDemat\Core\EventSubscriber\WorkflowAuditSubscriber:
+      tags:
+          - { name: kernel.event_subscriber }

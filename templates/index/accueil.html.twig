@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-100">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+
+  <title>Portail des applications Open Demat</title>
+  <meta name="description" content="Accédez aux applications administratives de l'Open Demat selon vos droits.">
+  <meta name="theme-color" content="#E42535">
+
+  <link rel="icon" href="">
+  <link rel="apple-touch-icon" href="">
+  
+  {# Bootstrap 5 #}
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  {# Style commun Open Demat #}
+  <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
+
+  <style>
+    .app-icon {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #e9ecef;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .app-icon-img {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+    }
+  </style>
+</head>
+
+<body class="d-flex flex-column h-100 has-fixed-header">
+  <a href="#main" class="skip-link">Aller au contenu principal</a>
+
+  <header id="header" class="fixed-top" role="banner">
+    <div class="container d-flex align-items-center justify-content-between py-2">
+      <a href="#" class="logo" aria-label="Accueil Open Demat">
+        <img src="{{ asset('assets/img/logo-open-demat.jpg') }}" alt="Open Demat">
+      </a>
+      <strong class="site-tag d-none d-md-inline">Portail des applications</strong>
+    </div>
+  </header>
+
+  <main id="main" role="main" class="flex-grow-1">
+    <div class="container text-center py-5">
+
+      {% set apps = app_hub_apps|default([]) %}
+
+      {# ===== Détection si l'utilisateur a au moins une appli intégrée ===== #}
+      {% set hasIntegratedApp = false %}
+      {% for app in apps %}
+        {% set allowed = false %}
+        {% for role in app.roles|default([]) %}
+          {% if is_granted(role) %}
+            {% set allowed = true %}
+          {% endif %}
+        {% endfor %}
+        {% if allowed %}
+          {% set hasIntegratedApp = true %}
+        {% endif %}
+      {% endfor %}
+
+      {# ===== Apps externes ===== #}
+      {% set externalApps = [] %}
+
+      <h1 class="page-title mb-2">Portail des applications administratives Open Demat</h1>
+      <p class="page-intro mb-5">
+        Retrouvez ici les applications auxquelles vous avez accès selon votre profil.
+      </p>
+
+      {# =======================================================
+        SECTION 1 — Applications intégrées
+      ======================================================= #}
+      <section class="text-start mx-auto" style="max-width:1100px">
+        <div class="mb-3">
+          <h2 class="h4 m-0">Applications intégrées à la plateforme</h2>
+          <p class="text-body-secondary m-0">
+            Disponibles selon vos droits (CAS + rôles).
+          </p>
+        </div>
+
+        {% if not hasIntegratedApp %}
+          <div class="alert alert-light">
+            <p class="m-0">
+              Vous n’avez accès à aucune application intégrée pour le moment.
+              <br>
+              <span class="text-body">
+                Si c’est anormal, contactez le support afin d’obtenir les droits nécessaires.
+              </span>
+            </p>
+          </div>
+        {% else %}
+          <ul class="apps-list">
+            {% for app in apps %}
+              {% set allowed = false %}
+              {% for role in app.roles|default([]) %}
+                {% if is_granted(role) %}
+                  {% set allowed = true %}
+                {% endif %}
+              {% endfor %}
+
+              {% if allowed %}
+                <li class="px-2">
+                  <article class="app-card h-100">
+                    <div class="d-flex align-items-center gap-3">
+                      <span class="app-icon">
+                        <img
+                          src="{{ asset('assets/img/open-demat-imgs/' ~ app.icon) }}"
+                          alt="Logo {{ app.title }}"
+                          class="app-icon-img"
+                        >
+                      </span>
+                      <h3 class="m-0">{{ app.title }}</h3>
+                    </div>
+
+                    {% if app.desc is defined %}
+                      <p class="mt-2 mb-0">{{ app.desc }}</p>
+                    {% endif %}
+
+                    <div class="app-actions mt-3">
+                      <a href="{{ app.url }}" class="btn btn-open-demat">
+                        Accéder
+                      </a>
+                    </div>
+                  </article>
+                </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </section>
+
+      {# =======================================================
+        SECTION 2 — Applications externes
+      ======================================================= #}
+      <section class="text-start mx-auto mt-5" style="max-width:1100px">
+        <div class="mb-3">
+          <h2 class="h4 m-0">Applications externes</h2>
+          <p class="text-body-secondary m-0">
+            Ces liens ouvrent des applications hors scope du portail (redirection).
+          </p>
+        </div>
+
+        <ul class="apps-list">
+          {% for ext in externalApps %}
+            <li class="px-2">
+              <article class="app-card h-100">
+                <div class="d-flex align-items-center gap-3">
+                  <span class="app-icon">
+                    <img
+                      src="{{ asset('assets/img/open-demat-imgs/' ~ ext.icon) }}"
+                      alt="Logo {{ ext.title }}"
+                      class="app-icon-img"
+                    >
+                  </span>
+                  <h3 class="m-0">{{ ext.title }}</h3>
+                </div>
+
+                {% if ext.desc is defined %}
+                  <p class="mt-2 mb-0">{{ ext.desc }}</p>
+                {% endif %}
+
+                <div class="app-actions mt-3">
+                  <a
+                    href="{{ ext.url }}"
+                    class="btn btn-open-demat"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Ouvrir
+                  </a>
+                </div>
+              </article>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+
+    </div>
+  </main>
+
+  <footer id="footer">
+    <div class="container text-center">
+      <p class="copyright m-0">
+        &copy; Copyright <strong>Open Demat</strong>. Tous droits réservés.
+      </p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

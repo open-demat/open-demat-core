@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="80"
+   height="80"
+   viewBox="0 0 80 80"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4 (e7c3feb1, 2024-10-09)"
+   sodipodi:docname="BPM-F3SCT-v2.svg"
+   inkscape:export-filename="BPM-F3SCT-80x80.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title2">Trames de Pictogrammes selon le System de Design de l'etat Français</title>
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     showgrid="true"
+     inkscape:zoom="18.02"
+     inkscape:cx="33.518313"
+     inkscape:cy="37.042175"
+     inkscape:window-width="2960"
+     inkscape:window-height="1606"
+     inkscape:window-x="48"
+     inkscape:window-y="132"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer5"
+     inkscape:clip-to-page="true"
+     guidecolor="#a600ff"
+     guideopacity="0.6">
+    <inkscape:grid
+       id="grid1"
+       units="px"
+       originx="0"
+       originy="0"
+       spacingx="1"
+       spacingy="1"
+       empcolor="#ff000f"
+       empopacity="0.34901961"
+       color="#06d7ff"
+       opacity="0.36862745"
+       empspacing="2"
+       enabled="true"
+       visible="true"
+       dotted="false" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 40 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="80 : 40 : 1"
+       inkscape:persp3d-origin="40 : 26.666667 : 1"
+       id="perspective1" />
+    <linearGradient
+       id="swatch1"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#4a6070;stop-opacity:1;"
+         offset="0"
+         id="stop1" />
+    </linearGradient>
+    <color-profile
+       name="sRGB-IEC61966-2.1"
+       xlink:href="file:///System/Library/ColorSync/Profiles/sRGB%20Profile.icc"
+       id="color-profile2" />
+  </defs>
+  <g
+     inkscape:label="Fond-Trame"
+     inkscape:groupmode="layer"
+     id="layer1" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="Import-Pixel"
+     style="display:inline" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="Pictogramme">
+    <g
+       id="g54"
+       transform="matrix(4.8878299,0,0,5.1164718,-1662.5111,-1235.2523)"
+       style="display:inline"
+       inkscape:label="Carnet">
+      <g
+         id="g54-0"
+         transform="matrix(0.91618201,0,0,0.66815865,29.001375,80.78364)"
+         style="display:inline"
+         inkscape:label="Anneaux">
+        <g
+           id="g53"
+           transform="matrix(0.77368929,0.40346823,-0.72392122,0.91499365,373.56349,74.280542)"
+           style="display:inline"
+           inkscape:label="carnet">
+          <rect
+             style="opacity:0.907;fill:#ffffff;fill-opacity:1;stroke:#000091;stroke-width:0.511159;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+             id="rect2"
+             width="8.3860188"
+             height="11.619843"
+             x="102.53233"
+             y="142.61772"
+             rx="0.52916664"
+             inkscape:label="paper" />
+          <path
+             style="fill:none;stroke:#000091;stroke-width:0.567216;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+             d="m 104.40274,152.08666 4.49289,-0.0134"
+             id="path4-8-0-1"
+             sodipodi:nodetypes="cc"
+             inkscape:label="footer" />
+          <path
+             style="fill:none;stroke:#000091;stroke-width:0.449251;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+             d="m 104.41136,150.61117 2.01067,-0.0188"
+             id="path4-8-0"
+             sodipodi:nodetypes="cc"
+             inkscape:label="text-5" />
+          <path
+             style="fill:none;stroke:#000091;stroke-width:0.483263;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+             d="m 104.43406,149.62475 2.34206,-0.0187"
+             id="path4-8"
+             sodipodi:nodetypes="cc"
+             inkscape:label="text-4" />
+          <path
+             style="fill:none;stroke:#000091;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+             d="m 104.40924,148.0551 3.10592,0.0183"
+             id="path4-30"
+             sodipodi:nodetypes="cc"
+             inkscape:label="text-3" />
+          <path
+             style="fill:none;stroke:#000091;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+             d="m 104.41938,147.18827 4.07424,-0.0182"
+             id="path4-0"
+             sodipodi:nodetypes="cc"
+             inkscape:label="text-2" />
+          <path
+             style="fill:none;stroke:#000091;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+             d="m 104.42004,146.31264 4.73196,0.0366"
+             id="path4-3"
+             sodipodi:nodetypes="cc"
+             inkscape:label="text-1" />
+          <path
+             style="fill:none;stroke:#000091;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+             d="m 105.90074,145.12265 2.77705,7e-5"
+             id="path4"
+             sodipodi:nodetypes="cc"
+             inkscape:label="title" />
+        </g>
+        <ellipse
+           style="display:inline;fill:none;fill-opacity:1;stroke:#000091;stroke-width:0.521532;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           id="path53-4"
+           cx="274.30746"
+           cy="-259.67606"
+           rx="1.0421414"
+           ry="0.73626018"
+           transform="matrix(0.30253911,0.95313697,-0.99966782,0.02577296,0,0)"
+           inkscape:label="ring-04" />
+        <ellipse
+           style="display:inline;fill:none;fill-opacity:1;stroke:#000091;stroke-width:0.521532;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           id="path53-89"
+           cx="271.71884"
+           cy="-262.50009"
+           rx="1.0421414"
+           ry="0.73626018"
+           transform="matrix(0.30253911,0.95313697,-0.99966782,0.02577296,0,0)"
+           inkscape:label="ring-03" />
+        <ellipse
+           style="display:inline;fill:none;fill-opacity:1;stroke:#000091;stroke-width:0.521532;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           id="path53-2"
+           cx="268.91211"
+           cy="-265.49509"
+           rx="1.0421414"
+           ry="0.73626018"
+           transform="matrix(0.30253911,0.95313697,-0.99966782,0.02577296,0,0)"
+           inkscape:label="ring-02" />
+        <ellipse
+           style="display:inline;fill:none;fill-opacity:1;stroke:#000091;stroke-width:0.521532;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           id="path53"
+           cx="266.50256"
+           cy="-268.06934"
+           rx="1.0421414"
+           ry="0.73626018"
+           transform="matrix(0.30253911,0.95313697,-0.99966782,0.02577296,0,0)"
+           inkscape:label="ring-01" />
+        <path
+           fill-rule="evenodd"
+           clip-rule="evenodd"
+           d="m 342.49213,244.01773 0.026,-0.002 h 0.89323 c 0.12333,0 0.22331,0.13096 0.22331,0.29251 v 0.87755 h 0.66992 c 0.11451,0 0.2089,0.11291 0.22181,0.25841 l 10e-4,0.0341 v 1.17006 c 0,0.16156 -0.1,0.29252 -0.2233,0.29252 h -0.66992 v 0.87755 c 0,0.15 -0.0862,0.27365 -0.19727,0.29055 l -0.026,0.002 h -0.89323 c -0.12333,0 -0.2233,-0.13096 -0.2233,-0.29251 v -0.87755 h -0.66993 c -0.11451,0 -0.2089,-0.11291 -0.22181,-0.25841 l -0.001,-0.0341 v -1.17006 c 0,-0.16156 0.1,-0.29252 0.2233,-0.29252 h 0.66993 v -0.87755 c 0,-0.15 0.0862,-0.27365 0.19726,-0.29055 z m 0.69596,1.46062 v -0.87755 h -0.44661 v 0.87755 c 0,0.15 -0.0862,0.27365 -0.19727,0.29055 l -0.026,0.002 h -0.66992 v 0.58504 h 0.66992 c 0.11451,0 0.20891,0.11291 0.22181,0.2584 l 0.002,0.0341 v 0.87755 h 0.44661 v -0.87755 c 0,-0.15 0.0862,-0.27365 0.19727,-0.29055 l 0.026,-0.002 h 0.66992 v -0.58504 h -0.66992 c -0.11451,0 -0.2089,-0.11291 -0.22181,-0.2584 z"
+           fill="#000091"
+           id="path18"
+           style="stroke-width:0.255579" />
+      </g>
+      <path
+         style="display:inline;opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.0999833;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+         d="m 346.97785,247.66004 -0.74483,0.68181 c 0.97373,0.01 1.38161,-0.0737 1.3674,-0.2273 -0.40114,0.18885 -0.96237,0.0676 -0.52915,-0.23026 0.11222,-0.0771 -0.15566,-0.1061 -0.0934,-0.22425 z"
+         id="path1-2"
+         sodipodi:nodetypes="cccsc"
+         inkscape:label="cache-04" />
+      <path
+         style="display:inline;opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.0999833;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+         d="m 343.14318,251.19716 -0.74483,0.68181 c 0.97373,0.01 1.38161,-0.0737 1.3674,-0.2273 -0.40114,0.18885 -0.96237,0.0676 -0.52915,-0.23026 0.11222,-0.0771 -0.15566,-0.1061 -0.0934,-0.22425 z"
+         id="path1-2-0"
+         sodipodi:nodetypes="cccsc"
+         inkscape:label="cache-03" />
+      <path
+         style="display:inline;opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+         d="m 344.95455,249.52749 -0.74483,0.68181 c 0.97373,0.01 1.38161,-0.0737 1.3674,-0.2273 -0.40114,0.18885 -0.96237,0.0676 -0.52915,-0.23026 0.11222,-0.0771 -0.15566,-0.1061 -0.0934,-0.22425 z"
+         id="path1-2-0-2"
+         sodipodi:nodetypes="cccsc"
+         inkscape:label="cache-02" />
+      <path
+         style="display:inline;opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.0999831;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+         d="m 348.68122,246.09387 -0.74483,0.68181 c 0.97373,0.01 1.38161,-0.0737 1.3674,-0.2273 -0.40114,0.18885 -0.96237,0.0676 -0.52915,-0.23026 0.11222,-0.0771 -0.15566,-0.1061 -0.0934,-0.22425 z"
+         id="path1"
+         sodipodi:nodetypes="cccsc"
+         inkscape:label="cache-01" />
+    </g>
+    <g
+       id="g1"
+       inkscape:label="Crayon"
+       style="display:inline"
+       transform="matrix(4.4781418,0,0,3.4186149,-1519.037,-808.71753)">
+      <path
+         style="display:inline;fill:#e42535;fill-opacity:1;stroke:#ffffff;stroke-width:0.265;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+         d="m 106.97198,150.18098 5.31662,-5.18873 c 0.84605,-0.2649 1.43135,0.54097 1.20584,1.18756 l -5.37144,5.17047 c -0.25228,-0.77672 -0.5658,-0.99524 -1.15102,-1.1693 z"
+         id="path2-1"
+         sodipodi:nodetypes="ccccc"
+         inkscape:label="body"
+         transform="translate(241.46443,101.3912)" />
+      <path
+         style="display:inline;fill:#e42535;fill-opacity:1;stroke:#ffffff;stroke-width:0.1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+         d="m 106.35079,151.8253 c -0.0586,-0.37605 0.15073,-0.95106 0.42022,-1.29718 0.62537,0.10886 0.81449,0.50856 0.85869,1.00486 -0.41967,0.21398 -1.05205,0.40752 -1.27891,0.29232 z"
+         id="path3"
+         sodipodi:nodetypes="cccc"
+         inkscape:label="head"
+         transform="translate(241.46443,101.3912)" />
+    </g>
+    <path
+       fill-rule="evenodd"
+       clip-rule="evenodd"
+       d="m 59,13 c -0.5514,0 -1,-0.4486 -1,-1 0,-0.5514 0.4486,-1 1,-1 0.5514,0 1,0.4486 1,1 0,0.5514 -0.4486,1 -1,1 z"
+       fill="#ececfe"
+       id="path1-6" />
+    <path
+       fill-rule="evenodd"
+       clip-rule="evenodd"
+       d="m 32,76 c -0.5514,0 -1,-0.4486 -1,-1 0,-0.5514 0.4486,-1 1,-1 0.5514,0 1,0.4486 1,1 0,0.5514 -0.4486,1 -1,1 z"
+       fill="#ececfe"
+       id="path2" />
+    <path
+       fill-rule="evenodd"
+       clip-rule="evenodd"
+       d="M 6,10 C 5.4486,10 5,9.5514 5,9 5,8.44855 5.4486,8 6,8 6.5514,8 7,8.44855 7,9 7,9.5514 6.5514,10 6,10 Z"
+       fill="#ececfe"
+       id="path3-0" />
+  </g>
+  <metadata
+     id="metadata2">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:title>Trames de Pictogrammes selon le System de Design de l'etat Français</dc:title>
+        <dc:date>2025-03-07</dc:date>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>CC-Y v4</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>pictogramme</rdf:li>
+            <rdf:li>design</rdf:li>
+            <rdf:li>france</rdf:li>
+            <rdf:li>sig</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+        <dc:description>Trames de Pictogrammes selon le System de Design de l'etat Français pour la création de nouveaux pictogrammes .</dc:description>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Miguel CANCELA DA FONSECA</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:publisher>
+          <cc:Agent>
+            <dc:title>SIG</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:source>SIG</dc:source>
+        <dc:language>French</dc:language>
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/by-nc-sa/4.0/" />
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/by-nc-sa/4.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:prohibits
+           rdf:resource="http://creativecommons.org/ns#CommercialUse" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#ShareAlike" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+</svg>

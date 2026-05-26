@@ -1,0 +1,165 @@
+{# templates/_partials/_navbar.html.twig #}
+{% set currentRoute = app.request.attributes.get('_route')|default('') %}
+{% set apps = app_hub_apps|default([]) %}
+{% set sidebarId = sidebar_id|default('sidebarMenu') %}
+{% set extraClasses = extra_classes|default('') %}
+{% set isMobileSidebar = (sidebarId == 'mobileSidebarMenu') %}
+
+<nav id="{{ sidebarId }}"
+     class="sidebar-open-demat d-flex flex-column flex-shrink-0 text-white {{ extraClasses }}"
+     aria-label="Navigation principale Open Demat">
+
+  <div class="p-3 d-flex flex-column flex-grow-1">
+
+    {# --- Zone utilisateur en haut UNIQUEMENT sur mobile (offcanvas) --- #}
+    {% if isMobileSidebar and app.user %}
+      {% set userDisplay =
+          app.user.displayName
+          ?? app.user.fullName
+          ?? app.user.username
+          ?? app.user.userIdentifier
+      %}
+
+      <div class="mb-3 p-3 rounded bg-white text-dark border">
+        <div class="small text-muted mb-2">Connecté en tant que</div>
+
+        <div class="d-flex align-items-center justify-content-between gap-2">
+          <div class="fw-semibold d-flex align-items-center">
+            <i class="bx bxs-user-circle fs-4 me-2" aria-hidden="true"></i>
+            <span class="truncate-1">{{ userDisplay }}</span>
+          </div>
+
+          <a class="btn btn-sm btn-outline-secondary"
+             href="{{ path('open_demat_core_profile_index') }}">
+            <i class="bx bx-id-card me-1" aria-hidden="true"></i>
+            Profil
+          </a>
+        </div>
+
+        <div class="d-flex gap-2 mt-3">
+          <button type="button"
+                  class="btn btn-sm btn-outline-secondary position-relative flex-grow-1"
+                  id="taskInboxBtnMobile"
+                  data-task-inbox-btn="1"
+                  data-bs-toggle="modal"
+                  data-bs-target="#taskInboxModal"
+                  data-bs-dismiss="offcanvas"
+                  data-url="{{ path('core_tasks_inbox') }}"
+                  data-count-url="{{ path('core_tasks_inbox_count') }}">
+            <i class="bx bx-task" aria-hidden="true"></i>
+            <span class="ms-1">Tâches</span>
+
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none"
+                  id="taskInboxCountMobile">0</span>
+          </button>
+
+          <a class="btn btn-sm btn-outline-danger flex-grow-1"
+             href="{{ path('app_logout') }}">
+            <i class="bx bx-log-out me-1" aria-hidden="true"></i>
+            Déconnexion
+          </a>
+        </div>
+      </div>
+
+      <hr class="border-light opacity-75">
+    {% else %}
+      <hr class="border-light opacity-75">
+    {% endif %}
+
+    {# --- Liste des applications / modules --- #}
+    <ul class="nav nav-pills flex-column mb-auto">
+      {% for entry in apps %}
+        {# Vérifie autorisations #}
+        {% set allowed = false %}
+        {% for role in entry.roles|default([]) %}
+          {% if is_granted(role) %}
+            {% set allowed = true %}
+          {% endif %}
+        {% endfor %}
+
+        {% if allowed %}
+          {# Active si on est sur n'importe quelle route de "l'app" (préfixe de route) #}
+          {% set routePrefix = (entry.route|default('')|split('_')|first) ~ '_' %}
+          {% set active = (routePrefix != '_' and currentRoute starts with routePrefix) or (currentRoute == (entry.route|default(''))) %}
+
+          <li class="nav-item">
+            <a href="{{ entry.url }}"
+               class="nav-link sidebar-link {{ active ? 'active' : '' }}"
+               aria-current="{{ active ? 'page' : 'false' }}">
+
+              {% if entry.icon %}
+                {# entry.icon = "csst.svg" (ou .png/.jpg) dans public/assets/img/open-demat-imgs/ #}
+                <img
+                  src="{{ asset('assets/img/open-demat-imgs/' ~ entry.icon) }}"
+                  alt=""
+                  class="sidebar-app-icon me-2"
+                  width="40"
+                  height="40"
+                  loading="lazy"
+                >
+              {% endif %}
+
+              <span class="link-text">{{ entry.title }}</span>
+            </a>
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+
+    <hr class="border-light opacity-75 mt-auto">
+
+    {# --- Compte utilisateur (dans la sidebar desktop ou quand pas connecté) --- #}
+    {% if app.user %}
+      {% set userDisplay =
+          app.user.displayName
+          ?? app.user.fullName
+          ?? app.user.username
+          ?? app.user.userIdentifier
+      %}
+    {% else %}
+      {% set userDisplay = 'Compte' %}
+    {% endif %}
+
+    <div class="dropdown mt-2">
+      <a href="#"
+         class="brand d-flex align-items-center dropdown-toggle text-white"
+         id="{{ sidebarId ~ '_userMenu' }}"
+         data-bs-toggle="dropdown"
+         aria-expanded="false">
+        <i class="bx bxs-user-circle fs-4 me-2" aria-hidden="true"></i>
+        <span class="truncate-1">{{ userDisplay }}</span>
+      </a>
+
+      <ul class="dropdown-menu dropdown-menu-dark shadow"
+          aria-labelledby="{{ sidebarId ~ '_userMenu' }}">
+
+        <li class="dropdown-header small">
+          {% if app.user %}
+            Connecté : {{ app.user.userIdentifier }}
+          {% else %}
+            Non connecté
+          {% endif %}
+        </li>
+
+        <li><hr class="dropdown-divider"></li>
+
+        {% if app.user %}
+          <li>
+            <a class="dropdown-item d-flex align-items-center gap-2"
+               href="{{ path('open_demat_core_profile_index') }}">
+              <i class="bx bx-id-card"></i> Mon profil
+            </a>
+          </li>
+
+          <li>
+            <a class="dropdown-item text-danger d-flex align-items-center gap-2"
+               href="{{ path('app_logout') }}">
+              <i class="bx bx-log-out"></i> Se déconnecter
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+
+  </div>
+</nav>

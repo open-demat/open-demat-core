@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CORE="composer.core.json"
+OVERLAY="composer.open_demat.json"
+OUT="composer.json"
+
+if ! command -v jq >/dev/null 2>&1; then
+  echo "❌ jq is required (sudo apt-get install -y jq)" >&2
+  exit 1
+fi
+
+jq . "$CORE" >/dev/null
+jq . "$OVERLAY" >/dev/null
+jq . "$OUT" >/dev/null  # ici on suppose qu'il existe déjà (après require/remove)
+
+tmp_core="$(mktemp)"
+tmp_out="$(mktemp)"
+
+# 1) SYNC core.require depuis OUT.require (en excluant open-demat/* + overlay.require)
+jq -n \
+  --slurpfile core "$CORE" \
+  --slurpfile overlay "$OVERLAY" \
+  --slurpfile out "$OUT" \
+  '
+  ($core[0] // {}) as $c
+  | ($overlay[0] // {}) as $o
+  | ($out[0] // {}) as $x
+  | ($o.require // {}) as $oReq
+  | ($x.require // {}) as $xReq
+  | ($xReq
+      | with_entries(
+          select(
+            (.key | startswith("open-demat/") | not)
+            and
+            ($oReq[.key] | not)
+          )
+        )
+    ) as $newCoreReq
+  | $c
+  | .require = $newCoreReq
+  ' > "$tmp_core"
+mv "$tmp_core" "$CORE"
+
+# 2) REBUILD OUT = core + overlay (require merge + repositories depuis overlay)
+jq -n \
+  --slurpfile core "$CORE" \
+  --slurpfile overlay "$OVERLAY" \
+  '
+  ($core[0] // {}) as $c
+  | ($overlay[0] // {}) as $o
+  | $c
+  | .require = (($c.require // {}) + ($o.require // {}))
+  | .repositories = ($o.repositories // [])
+  ' > "$tmp_out"
+mv "$tmp_out" "$OUT"
+
+echo "✅ Synced $CORE from $OUT and rebuilt $OUT"

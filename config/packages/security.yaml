@@ -1,0 +1,59 @@
+security:
+  #enable_authenticator_manager: true
+
+  # Hiérarchie F3SCT (adapte selon tes besoins)
+  role_hierarchy:
+    ROLE_ADMIN:
+    - ROLE_USER
+    - ROLE_ADMIN
+
+  password_hashers:
+    Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+    App\Entity\User:
+      algorithm: auto
+
+  providers:
+    chain_provider:
+      chain:
+        providers: [in_memory, cas_user_provider]
+    app_user_provider:
+      entity:
+        class: OpenDemat\Core\Entity\User
+        property: username
+
+    in_memory:
+      memory:
+        users:
+          __NO_USER__:
+            password:
+            roles: ROLE_ANON
+
+  firewalls:
+    dev:
+      pattern: ^/(_(profiler|wdt)|css|images|js)/
+      security: false
+
+    main:
+      lazy: true
+      provider: chain_provider
+      custom_authenticators:
+        - OpenDemat\Core\Security\CasAuthenticator
+      login_link:
+        check_route: auth-check
+        signature_properties: ['email']
+        lifetime: 950400
+        max_uses: 150
+      entry_point: OpenDemat\Core\Security\CasAuthenticator
+      logout:
+        path: /logout
+
+  access_control:
+    - { path: ^/profile, roles: ROLE_USER }
+    - { path: ^/admin, roles: ROLE_ADMIN }
+    - { path: ^/csst/observations, roles: [ROLE_CSST_SHS, ROLE_CSST_AP, ROLE_CSST_F3SCT] }
+    - { path: ^/csst/admin, roles: [ROLE_CSST_POWERUSER] }
+    - { path: ^/csst, roles: ROLE_USER }
+    - { path: ^/courriers, roles: ROLE_COURRIERS_OPERATEUR }
+    - { path: ^/vehicules, roles: ROLE_USER }
+    
+    

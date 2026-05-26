@@ -1,0 +1,291 @@
+{# templates/_partials/_file_picker.html.twig #}
+{#
+  Usage:
+    {% include 'components/_file_picker.html.twig' with {
+      field: form.attachments,
+      label: 'Pièces jointes',
+      help: 'PDF / images',
+      max: 10,
+      maxSizeMb: 10,
+      accept: 'image/*,application/pdf'
+    } %}
+#}
+
+{% set id = field.vars.id %}
+{% set max = max|default(10) %}
+{% set accept = accept|default('image/*,application/pdf') %}
+{% set label = label|default(field.vars.label ?? 'Fichiers') %}
+{% set help = help|default('Formats : PDF, JPG, PNG, WEBP') %}
+{% set maxSizeMb = maxSizeMb|default(10) %}
+
+<div class="mb-4 filepicker" data-filepicker data-input-id="{{ id }}" data-max="{{ max }}">
+  <div class="d-flex justify-content-between align-items-start gap-3">
+    <div>
+      <label class="form-label fw-semibold">{{ label }}</label>
+      <div class="text-muted small">
+        {{ help }} — <strong>{{ max }} max</strong> — {{ maxSizeMb }} Mo / fichier
+      </div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-outline-primary btn-sm" data-pick>
+        <i class="fas fa-paperclip me-1"></i> Ajouter
+      </button>
+      <button type="button" class="btn btn-outline-danger btn-sm d-none" data-clear>
+        <i class="fas fa-trash me-1"></i> Tout retirer
+      </button>
+    </div>
+  </div>
+
+  {# On rend le vrai input Symfony mais caché, pour rester compatible validation/form submit #}
+  <div class="d-none">
+    {{ form_widget(field, { attr: { id: id, accept: accept } }) }}
+  </div>
+  {{ form_errors(field) }}
+
+  <div class="mt-3">
+    <div
+      class="border rounded-3 p-4 text-center bg-light-subtle filepicker-dropzone"
+      role="button"
+      tabindex="0"
+      data-dropzone
+    >
+      <div class="fw-semibold">
+        Glisse-dépose tes fichiers ici
+      </div>
+      <div class="text-muted small mt-1">
+        ou clique sur “Ajouter”
+      </div>
+      <div class="small mt-2">
+        <span class="badge text-bg-secondary">
+          <span data-count>0</span> / {{ max }}
+        </span>
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <div class="list-group" data-list></div>
+      <div class="text-muted small mt-2 d-none" data-empty>
+        Aucun fichier sélectionné.
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Styles optionnels local au composant (tu peux migrer dans ton CSS global) #}
+<style>
+  .filepicker-dropzone { transition: .12s ease-in-out; }
+  .filepicker-dropzone.is-dragover { transform: scale(1.01); }
+  .filepicker-preview {
+    width: 44px; height: 44px; object-fit: cover;
+    border-radius: .5rem; border: 1px solid rgba(0,0,0,.08);
+    background: white;
+  }
+
+  /* Empêche les débordements dans les flex (très important) */
+  .filepicker [data-list] .list-group-item{
+    min-width: 0;
+  }
+
+  /* Le bloc "gauche" doit pouvoir rétrécir */
+  .filepicker [data-list] .list-group-item > .d-flex.align-items-center{
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  /* Le texte doit pouvoir casser */
+  .filepicker [data-list] .list-group-item .fw-semibold{
+    overflow-wrap: anywhere;     /* casse même sans espaces */
+    word-break: break-word;      /* fallback */
+  }
+
+  /* Mobile: empiler les actions sous le texte */
+  @media (max-width: 540px){
+    .filepicker [data-list] .list-group-item{
+      align-items: flex-start !important;
+      flex-direction: column;
+    }
+
+    /* le bloc boutons prend toute la largeur et passe dessous */
+    .filepicker [data-list] .list-group-item > .d-flex.gap-2{
+      width: 100%;
+      justify-content: flex-end;
+      margin-top: .5rem;
+    }
+
+    /* (optionnel) réduire un peu la preview */
+    .filepicker-preview{
+      width: 40px;
+      height: 40px;
+    }
+  }
+</style>
+
+{# Script: inclus une seule fois même si tu utilises plusieurs filepickers sur la page #}
+{% if not app.request.attributes.get('_filepicker_js_included') %}
+  {% set _ = app.request.attributes.set('_filepicker_js_included', true) %}
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const pickers = document.querySelectorAll('[data-filepicker]');
+    if (!pickers.length) return;
+
+    const bytesToMb = b => (b / 1024 / 1024);
+    const fmtSize = b => (bytesToMb(b)).toFixed(1) + ' Mo';
+
+    pickers.forEach((root) => {
+      const inputId = root.dataset.inputId;
+      const max = parseInt(root.dataset.max || '10', 10);
+
+      const input = document.getElementById(inputId);
+      if (!input) {
+        console.error('[filepicker] input introuvable:', inputId);
+        return;
+      }
+
+      const pickBtn = root.querySelector('[data-pick]');
+      const clearBtn = root.querySelector('[data-clear]');
+      const dropzone = root.querySelector('[data-dropzone]');
+      const list = root.querySelector('[data-list]');
+      const count = root.querySelector('[data-count]');
+      const empty = root.querySelector('[data-empty]');
+
+      let files = [];
+
+      const updateInput = () => {
+        const dt = new DataTransfer();
+        files.forEach(f => dt.items.add(f));
+        input.files = dt.files;
+
+        if (count) count.textContent = files.length;
+        if (clearBtn) clearBtn.classList.toggle('d-none', files.length === 0);
+        if (empty) empty.classList.toggle('d-none', files.length !== 0);
+      };
+
+      const render = () => {
+        if (!list) return;
+        list.innerHTML = '';
+
+        files.forEach((f, i) => {
+          const item = document.createElement('div');
+          item.className = 'list-group-item d-flex align-items-center justify-content-between gap-3';
+
+          const isImg = f.type && f.type.startsWith('image/');
+          const isPdf = f.type === 'application/pdf';
+
+          const left = document.createElement('div');
+          left.className = 'd-flex align-items-center gap-3';
+
+          const previewWrap = document.createElement('div');
+          if (isImg) {
+            const img = document.createElement('img');
+            img.className = 'filepicker-preview';
+            img.alt = f.name;
+            img.src = URL.createObjectURL(f);
+            img.onload = () => URL.revokeObjectURL(img.src);
+            previewWrap.appendChild(img);
+          } else {
+            // icône simple
+            previewWrap.innerHTML = `<div class="filepicker-preview d-flex align-items-center justify-content-center">
+              <i class="fas ${isPdf ? 'fa-file-pdf' : 'fa-file'}"></i>
+            </div>`;
+          }
+
+          const meta = document.createElement('div');
+          meta.innerHTML = `
+            <div class="fw-semibold">${f.name}</div>
+            <div class="text-muted small">${(f.type || 'fichier')} – ${fmtSize(f.size)}</div>
+          `;
+
+          left.appendChild(previewWrap);
+          left.appendChild(meta);
+
+          const right = document.createElement('div');
+          right.className = 'd-flex gap-2';
+
+          if (isImg || isPdf) {
+            const btnView = document.createElement('button');
+            btnView.type = 'button';
+            btnView.className = 'btn btn-outline-secondary btn-sm';
+            btnView.textContent = 'Voir';
+            btnView.addEventListener('click', () => {
+              const url = URL.createObjectURL(f);
+              window.open(url, '_blank');
+              setTimeout(() => URL.revokeObjectURL(url), 60000);
+            });
+            right.appendChild(btnView);
+          }
+
+          const btnRemove = document.createElement('button');
+          btnRemove.type = 'button';
+          btnRemove.className = 'btn btn-outline-danger btn-sm';
+          btnRemove.textContent = 'Retirer';
+          btnRemove.addEventListener('click', () => {
+            files.splice(i, 1);
+            updateInput();
+            render();
+          });
+          right.appendChild(btnRemove);
+
+          item.appendChild(left);
+          item.appendChild(right);
+          list.appendChild(item);
+        });
+      };
+
+      const addFiles = (fileList) => {
+        for (const f of fileList) {
+          if (files.length >= max) break;
+          files.push(f);
+        }
+        updateInput();
+        render();
+      };
+
+      const openPicker = () => {
+        // ✅ vider AVANT ouverture pour permettre de re-sélectionner le même fichier
+        input.value = '';
+        input.click();
+      };
+
+      pickBtn?.addEventListener('click', openPicker);
+      dropzone?.addEventListener('click', openPicker);
+      dropzone?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') openPicker();
+      });
+
+      input.addEventListener('change', () => {
+        addFiles(input.files);
+        // ❌ surtout pas input.value='' ici, sinon tu perds les fichiers pour le submit
+      });
+
+
+      clearBtn?.addEventListener('click', () => {
+        files = [];
+        updateInput();
+        render();
+      });
+
+      if (dropzone) {
+        ['dragover','dragenter'].forEach(evt => {
+          dropzone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            dropzone.classList.add('is-dragover', 'border-primary');
+          });
+        });
+
+        ['dragleave','drop'].forEach(evt => {
+          dropzone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('is-dragover', 'border-primary');
+          });
+        });
+
+        dropzone.addEventListener('drop', (e) => addFiles(e.dataTransfer.files));
+      }
+
+      updateInput();
+      render();
+    });
+  });
+  </script>
+{% endif %}

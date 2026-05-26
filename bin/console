@@ -1,0 +1,18 @@
+<?php
+use OpenDemat\Core\Kernel;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
+use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Dotenv\Dotenv;
+
+require dirname(__DIR__).'/vendor/autoload.php';
+
+if (is_file(dirname(__DIR__).'/.env')) {
+    (new Dotenv())->usePutenv(false)->bootEnv(dirname(__DIR__).'/.env');
+}
+
+$input  = new ArgvInput();
+$env    = $input->getParameterOption(['--env','-e'], $_SERVER['APP_ENV'] ?? 'dev');
+$debug  = ($_SERVER['APP_DEBUG'] ?? ('prod' !== $env));
+
+$kernel = new Kernel($env, $debug);
+(new Application($kernel))->run($input);

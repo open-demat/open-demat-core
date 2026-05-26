@@ -1,0 +1,13 @@
+security:
+  providers:
+    app_user_provider:
+      entity:
+        class: OpenDemat\Core\Entity\User
+        property: username
+
+  firewalls:
+    main:
+      lazy: true
+      provider: app_user_provider
+      # pas besoin de CAS en tests unitaires/func
+      # (loginUser() bypass l’authenticator)
