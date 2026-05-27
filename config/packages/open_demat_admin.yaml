@@ -2,3 +2,18 @@ open_demat_admin:
   organization:
     name: '%env(default::ORGANIZATION_NAME)%'
     logo: '%env(default::ORGANIZATION_LOGO)%'
+  cas:
+    base_url: '%env(default::CAS_BASE_URL)%'
+    logout_url: '%env(default::CAS_LOGOUT_URL)%'
+    host: '%env(default::CAS_HOST)%'
+    port: '%env(default::CAS_PORT)%'
+    path: '%env(default::CAS_PATH)%'
+    login_target: '%env(default::CAS_LOGIN_TARGET)%'
+    gateway: '%env(default::CAS_GATEWAY)%'
+  s3:
+    endpoint: '%env(default::MINIO_ENDPOINT)%'
+    region: '%env(default::MINIO_REGION)%'
+    bucket: '%env(default::MINIO_BUCKET)%'
+    use_path_style: '%env(default::MINIO_USE_PATH_STYLE)%'
+    access_key: '%env(default::MINIO_ACCESS_KEY)%'
+    secret_key: '%env(default::MINIO_SECRET_KEY)%'
