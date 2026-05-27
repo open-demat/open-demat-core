@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 1.11.2 (2026-05-27)
+
+
+### Bug Fixes
+
+* add files ([cf17ad0](https://github.com/open-demat/open-demat-core/commit/cf17ad0e8425326e3f40a0160c96c8aead66c64b))
+
 ### [1.11.1](https://github.com/open-demat/open-demat-core/compare/v1.11.0...v1.11.1) (2026-03-17)
 
 ## [1.11.0](https://github.com/open-demat/open-demat-core/compare/v1.10.1...v1.11.0) (2026-03-16)
