@@ -29,6 +29,10 @@ composer install
 composer test
 ```
 
+Pour une installation pas a pas avec base de donnees, stockage S3,
+authentification CAS/Shibboleth et ajout de bundles, voir
+`docs/getting-started.md`.
+
 ## Licence
 
 Ce projet est distribué sous licence GNU Affero General Public License v3.0

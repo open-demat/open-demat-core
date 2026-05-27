@@ -37,6 +37,7 @@ security:
       lazy: true
       provider: chain_provider
       custom_authenticators:
+        - OpenDemat\Core\Security\ShibbolethAuthenticator
         - OpenDemat\Core\Security\CasAuthenticator
       login_link:
         check_route: auth-check

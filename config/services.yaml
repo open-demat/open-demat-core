@@ -10,6 +10,13 @@ parameters:
   cas_path: '%env(CAS_PATH)%'
   cas_login_target: '%env(resolve:CAS_LOGIN_TARGET)%'
   cas_gateway: '%env(bool:CAS_GATEWAY)%'
+  shibboleth_enabled: '%env(bool:SHIBBOLETH_ENABLED)%'
+  shibboleth_identifier_attribute: '%env(string:SHIBBOLETH_IDENTIFIER_ATTRIBUTE)%'
+  shibboleth_email_attribute: '%env(string:SHIBBOLETH_EMAIL_ATTRIBUTE)%'
+  shibboleth_first_name_attribute: '%env(string:SHIBBOLETH_FIRST_NAME_ATTRIBUTE)%'
+  shibboleth_last_name_attribute: '%env(string:SHIBBOLETH_LAST_NAME_ATTRIBUTE)%'
+  shibboleth_default_email_domain: '%env(string:SHIBBOLETH_DEFAULT_EMAIL_DOMAIN)%'
+  shibboleth_auto_create_user: '%env(bool:SHIBBOLETH_AUTO_CREATE_USER)%'
 
 imports:
   - { resource: '../app_open_demat/*/Resources/config/services.yaml', type: glob, ignore_errors: true }
@@ -40,6 +47,16 @@ services:
   OpenDemat\Core\Security\CasToUserProvider:
       arguments:
           $userRepository: '@OpenDemat\Core\Repository\UserRepository'
+
+  OpenDemat\Core\Security\ShibbolethAuthenticator:
+      arguments:
+          $enabled: '%shibboleth_enabled%'
+          $identifierAttribute: '%shibboleth_identifier_attribute%'
+          $emailAttribute: '%shibboleth_email_attribute%'
+          $firstNameAttribute: '%shibboleth_first_name_attribute%'
+          $lastNameAttribute: '%shibboleth_last_name_attribute%'
+          $defaultEmailDomain: '%shibboleth_default_email_domain%'
+          $autoCreateUser: '%shibboleth_auto_create_user%'
   
   # ------- PSR-17 (Nyholm) -------
   Nyholm\Psr7\Factory\Psr17Factory: ~
