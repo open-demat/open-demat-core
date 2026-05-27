@@ -99,7 +99,7 @@
     "test": "APP_ENV=test vendor/bin/phpunit -c phpunit.xml.dist"
   },
   "description": "Open Demat Symfony core application for modular business-process platforms.",
-  "license": "MIT",
+  "license": "AGPL-3.0-or-later",
   "homepage": "https://github.com/open-demat/open-demat-core",
   "support": {
     "issues": "https://github.com/open-demat/open-demat-core/issues"
