@@ -15,6 +15,14 @@
         <env name="DATABASE_URL" value="postgresql://postgres:password@127.0.0.1:5432/process_db_test?charset=utf8"/>
         <!-- Pour SecurityController::llogout -->
         <env name="CAS_LOGOUT_URL" value="https://cas.test/logout"/>
+        <env name="SHIBBOLETH_ENABLED" value="1"/>
+        <env name="SHIBBOLETH_IDENTIFIER_ATTRIBUTE" value="HTTP_EPPN"/>
+        <env name="SHIBBOLETH_EMAIL_ATTRIBUTE" value="HTTP_MAIL"/>
+        <env name="SHIBBOLETH_FIRST_NAME_ATTRIBUTE" value="HTTP_GIVENNAME"/>
+        <env name="SHIBBOLETH_LAST_NAME_ATTRIBUTE" value="HTTP_SN"/>
+        <env name="SHIBBOLETH_DEFAULT_EMAIL_DOMAIN" value="example.org"/>
+        <env name="SHIBBOLETH_AUTO_CREATE_USER" value="1"/>
+        <env name="SHIBBOLETH_LOGIN_URL" value="http://localhost:8081/accueil"/>
     </php>
 
     <testsuites>

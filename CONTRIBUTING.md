@@ -17,3 +17,9 @@ Thank you for helping improve Open Demat.
 ## Pull requests
 
 Please keep changes focused, include tests for behavior changes, and use conventional commit messages when possible.
+
+## Licensing
+
+By contributing to this project, you agree that your contribution is licensed
+under the GNU Affero General Public License v3.0 or later, with the bundle/plugin
+exception described in `LICENSE-EXCEPTION.md`.

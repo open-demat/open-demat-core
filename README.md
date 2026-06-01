@@ -15,7 +15,7 @@ Il repose sur une architecture :
 
 # Open Source Usage
 
-This repository is published under the MIT license. The public distribution is installable without private process bundles: copy `composer.open_demat.json.template` to `composer.open_demat.json`, then run `bash bin/composer-build` before `composer install`.
+This repository is published under the GNU Affero General Public License v3.0 or later, with a specific exception for bundles and plugins. The public distribution is installable without private process bundles: copy `composer.open_demat.json.template` to `composer.open_demat.json`, then run `bash bin/composer-build` before `composer install`.
 
 Deployment-specific bundles, private repositories, and environment secrets must live in `composer.open_demat.json` or CI variables outside the public repository.
 
@@ -28,6 +28,55 @@ bash bin/composer-build
 composer install
 composer test
 ```
+
+Pour une installation pas a pas avec base de donnees, stockage S3,
+authentification CAS/Shibboleth et ajout de bundles, voir
+`docs/getting-started.md`.
+
+## Licence
+
+Ce projet est distribué sous licence GNU Affero General Public License v3.0
+ou ultérieure, avec une exception spécifique pour les bundles/plugins.
+
+Le cœur du logiciel reste libre : si vous modifiez le cœur et que vous le
+redistribuez ou le rendez accessible à des utilisateurs via un réseau, vous devez
+rendre disponible le code source correspondant de cette version modifiée.
+
+Les bundles, plugins ou modules développés via les API publiques d’extension
+documentées peuvent rester privés ou être distribués sous une autre licence,
+conformément à l’exception décrite dans `LICENSE-EXCEPTION.md`.
+
+Voir :
+
+- `LICENSE`
+- `LICENSE-EXCEPTION.md`
+- `NOTICE.md`
+
+## Exception pour les bundles
+
+Le cœur du projet est distribué sous licence AGPLv3.
+
+Par exception, les bundles, plugins ou modules Symfony développés pour des besoins
+internes peuvent rester privés ou être distribués sous une autre licence, à condition
+qu’ils interagissent avec le cœur uniquement via les API publiques d’extension
+documentées.
+
+Cette exception ne couvre pas les modifications du cœur, ni le code copié depuis
+le cœur vers un bundle. Toute modification du cœur reste soumise à l’AGPLv3.
+
+## Support commercial
+
+Un support professionnel est disponible pour :
+
+- installation et configuration ;
+- maintenance corrective et évolutive ;
+- hébergement managé ;
+- intégration avec LDAP, CAS, SAML, API métiers ;
+- développement de bundles spécifiques ;
+- formation administrateurs et utilisateurs ;
+- accompagnement au déploiement.
+
+Contact : contact@example.com
 
 # Architecture générale
 

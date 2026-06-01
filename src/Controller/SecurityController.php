@@ -63,19 +63,22 @@ class SecurityController extends AbstractController
         throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
     }
 
-    #[Route('/login', name: 'login')]
+    #[Route('/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils, Request $request): Response
     {
         if ($this->getUser()) {
-            return $this->redirectToRoute('formCandidat');
+            return $this->redirectToRoute('app_home');
         }
 
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
 
-        return $this->render('bundles/twigBundle/Exception/error401.html.twig', [
-            'status_code' => '401',
-            'status_text' => ["COD-34 : Une erreur est survenue"]
+        return $this->render('security/login.html.twig', [
+            'error' => $error,
+            'last_username' => $lastUsername,
+            'target_path' => $request->query->get('_target_path', '/'),
+            'shibboleth_enabled' => (bool) $this->getParameter('shibboleth_enabled'),
+            'shibboleth_login_url' => (string) $this->getParameter('shibboleth_login_url'),
         ]);
     }
 

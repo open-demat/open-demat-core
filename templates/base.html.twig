@@ -7,6 +7,8 @@
     <meta charset="UTF-8"/>
     {% set orgName = organization_name|default('Open Demat') %}
     {% set orgLogo = organization_logo|default('') %}
+    {% set themePrimaryColor = theme_primary_color|default('#E42535') %}
+    {% set themePrimaryDarkColor = theme_primary_dark_color|default('#B51E2A') %}
 
     <meta name="description" content="Portail d'administration {{ orgName }}"/>
 
@@ -25,6 +27,12 @@
 
       {# Style commun Open Demat #}
       <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet"/>
+      <style>
+        :root {
+          --open-demat-red: {{ themePrimaryColor }};
+          --open-demat-red-dark: {{ themePrimaryDarkColor }};
+        }
+      </style>
     {% endblock %}
 
     <script>
@@ -190,7 +198,10 @@
     {# --- FOOTER FIXE --- #}
     <footer class="bg-white border-top py-2 position-fixed bottom-0 start-0 end-0" role="contentinfo">
       <div class="container text-center small">
-        <span>{{ orgName }} &copy; {{ "now"|date("Y") }}. Tous droits réservés.</span>
+        <span>
+          Plateforme powered by
+          <a href="https://github.com/open-demat" target="_blank" rel="noopener noreferrer">Open Demat</a>.
+        </span>
       </div>
     </footer>
 

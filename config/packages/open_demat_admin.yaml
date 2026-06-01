@@ -2,6 +2,9 @@ open_demat_admin:
   organization:
     name: '%env(default::ORGANIZATION_NAME)%'
     logo: '%env(default::ORGANIZATION_LOGO)%'
+  theme:
+    primary_color: '%env(default::THEME_PRIMARY_COLOR)%'
+    primary_dark_color: '%env(default::THEME_PRIMARY_DARK_COLOR)%'
   cas:
     base_url: '%env(default::CAS_BASE_URL)%'
     logout_url: '%env(default::CAS_LOGOUT_URL)%'

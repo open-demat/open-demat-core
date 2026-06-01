@@ -61,14 +61,24 @@ final class HubAppSynchronizer
 
             // 1) path Symfony (ex: "/admin", "/csst")
             $path = $this->urlGenerator->generate($routeName);
+            $absoluteUrl = $this->urlGenerator->generate(
+                $routeName,
+                [],
+                UrlGeneratorInterface::ABSOLUTE_URL
+            );
 
-            // 2) base URL à partir de l’ENV (ADMIN_URL, CSST_URL, …)
+            // 2) base URL à partir de l’ENV (EXAMPLE_URL, CSST_URL, …)
+            //    Si l'app vit sur le même host que le portail, ADMIN_URL sert de base commune.
             $envName = strtoupper($key) . '_URL';
-            $base    = $_ENV[$envName] ?? $_SERVER[$envName] ?? '';
+            $base    = $_ENV[$envName]
+                ?? $_SERVER[$envName]
+                ?? $_ENV['ADMIN_URL']
+                ?? $_SERVER['ADMIN_URL']
+                ?? '';
 
             // 3) URL complète qui sera stockée en DB
             $url = $base === ''
-                ? $path
+                ? $absoluteUrl
                 : rtrim($base, '/') . $path;
 
             $defRoles = $def->getRoles();
