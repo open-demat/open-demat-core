@@ -80,8 +80,10 @@
 
         {% if allowed %}
           {# Active si on est sur n'importe quelle route de "l'app" (préfixe de route) #}
-          {% set routePrefix = (entry.route|default('')|split('_')|first) ~ '_' %}
-          {% set active = (routePrefix != '_' and currentRoute starts with routePrefix) or (currentRoute == (entry.route|default(''))) %}
+          {% set entryRoute = entry.route|default('') %}
+          {% set routeParts = entryRoute|split('_') %}
+          {% set routePrefix = routeParts|length > 1 ? routeParts|slice(0, -1)|join('_') ~ '_' : entryRoute %}
+          {% set active = (routePrefix != '' and currentRoute starts with routePrefix) or (currentRoute == entryRoute) %}
 
           <li class="nav-item">
             <a href="{{ entry.url }}"
