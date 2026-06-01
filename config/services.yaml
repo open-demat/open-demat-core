@@ -5,6 +5,8 @@ parameters:
   admin_url: '%env(resolve:ADMIN_URL)%'
   organization_name: '%env(default::ORGANIZATION_NAME)%'
   organization_logo: '%env(default::ORGANIZATION_LOGO)%'
+  theme_primary_color: '%env(default::THEME_PRIMARY_COLOR)%'
+  theme_primary_dark_color: '%env(default::THEME_PRIMARY_DARK_COLOR)%'
   cas_host: '%env(CAS_HOST)%'
   cas_port: '%env(CAS_PORT)%'
   cas_path: '%env(CAS_PATH)%'
@@ -141,6 +143,10 @@ services:
           secret: '%env(MINIO_SECRET_KEY)%'
           
   OpenDemat\Core\Service\AttachmentService:
+    arguments:
+      $minioBucket: '%minio.bucket%'
+
+  OpenDemat\Core\Service\StaticDocumentService:
     arguments:
       $minioBucket: '%minio.bucket%'
   

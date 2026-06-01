@@ -5,6 +5,7 @@ CONFIG_FILE="${GARAGE_CONFIG_FILE:-/etc/garage.toml}"
 BUCKET="${GARAGE_BUCKET:-documents}"
 KEY_NAME="${GARAGE_KEY_NAME:-open-demat-core}"
 CAPACITY="${GARAGE_CAPACITY:-1G}"
+RECREATE_KEY="${GARAGE_RECREATE_KEY:-0}"
 
 garage_cmd() {
   garage -c "$CONFIG_FILE" "$@"
@@ -16,12 +17,12 @@ until garage_cmd status >/tmp/garage-status.txt 2>/tmp/garage-status.err; do
 done
 
 NODE_ID="$(awk '
-  /^[0-9a-fA-F]{64}@/ {
+  /^[0-9a-fA-F]{16,64}@/ {
     split($1, parts, "@");
     print parts[1];
     exit;
   }
-  /^[0-9a-fA-F]{64}[[:space:]]/ {
+  /^[0-9a-fA-F]{16,64}[[:space:]]/ {
     print $1;
     exit;
   }
@@ -44,16 +45,36 @@ if ! garage_cmd layout show | grep -q "$NODE_ID"; then
 fi
 
 garage_cmd bucket create "$BUCKET" 2>/dev/null || true
-garage_cmd key create "$KEY_NAME" >/tmp/garage-key.txt 2>/dev/null || true
+
+KEY_CREATED=0
+if garage_cmd key info "$KEY_NAME" >/tmp/garage-key-info.txt 2>/dev/null; then
+  if [ "$RECREATE_KEY" = "1" ]; then
+    garage_cmd key delete --yes "$KEY_NAME"
+    garage_cmd key create "$KEY_NAME" >/tmp/garage-key.txt
+    KEY_CREATED=1
+  fi
+else
+  garage_cmd key create "$KEY_NAME" >/tmp/garage-key.txt
+  KEY_CREATED=1
+fi
+
 garage_cmd bucket allow --read --write --owner "$BUCKET" --key "$KEY_NAME" 2>/dev/null || true
 
 echo
 echo "Garage bucket ready: $BUCKET"
-echo "Garage key info:"
-garage_cmd key info "$KEY_NAME"
+if [ "$KEY_CREATED" = "1" ]; then
+  echo "Garage key created:"
+  cat /tmp/garage-key.txt
+else
+  echo "Garage key already exists:"
+  garage_cmd key info "$KEY_NAME"
+  echo
+  echo "Secret key is only shown when the key is created."
+  echo "Run with GARAGE_RECREATE_KEY=1 to rotate it and print a new secret."
+fi
 echo
 echo "Use these Symfony values:"
-echo "MINIO_ENDPOINT=http://127.0.0.1:3900"
+echo "MINIO_ENDPOINT=http://127.0.0.1:3910"
 echo "MINIO_REGION=garage"
 echo "MINIO_BUCKET=$BUCKET"
 echo "MINIO_USE_PATH_STYLE=1"
