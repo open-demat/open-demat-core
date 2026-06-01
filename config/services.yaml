@@ -17,6 +17,7 @@ parameters:
   shibboleth_last_name_attribute: '%env(string:SHIBBOLETH_LAST_NAME_ATTRIBUTE)%'
   shibboleth_default_email_domain: '%env(string:SHIBBOLETH_DEFAULT_EMAIL_DOMAIN)%'
   shibboleth_auto_create_user: '%env(bool:SHIBBOLETH_AUTO_CREATE_USER)%'
+  shibboleth_login_url: '%env(default::SHIBBOLETH_LOGIN_URL)%'
 
 imports:
   - { resource: '../app_open_demat/*/Resources/config/services.yaml', type: glob, ignore_errors: true }

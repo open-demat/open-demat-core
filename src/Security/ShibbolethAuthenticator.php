@@ -14,9 +14,10 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
+use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
-final class ShibbolethAuthenticator extends AbstractAuthenticator
+final class ShibbolethAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
 {
     use TargetPathTrait;
 
@@ -95,6 +96,11 @@ final class ShibbolethAuthenticator extends AbstractAuthenticator
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
         return new Response($exception->getMessage(), Response::HTTP_UNAUTHORIZED);
+    }
+
+    public function start(Request $request, ?AuthenticationException $authException = null): Response
+    {
+        return new Response('Authentication required by Shibboleth.', Response::HTTP_UNAUTHORIZED);
     }
 
     private function getAttribute(Request $request, string $attributeName): ?string

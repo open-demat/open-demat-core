@@ -44,11 +44,15 @@ security:
         signature_properties: ['email']
         lifetime: 950400
         max_uses: 150
-      entry_point: OpenDemat\Core\Security\CasAuthenticator
+      entry_point: OpenDemat\Core\Security\LoginChoiceEntryPoint
       logout:
         path: /logout
 
   access_control:
+    - { path: ^/login$, roles: PUBLIC_ACCESS }
+    - { path: ^/cas/login, roles: PUBLIC_ACCESS }
+    - { path: ^/cas/force, roles: PUBLIC_ACCESS }
+    - { path: ^/llogout, roles: PUBLIC_ACCESS }
     - { path: ^/profile, roles: ROLE_USER }
     - { path: ^/admin, roles: ROLE_ADMIN }
     - { path: ^/csst/observations, roles: [ROLE_CSST_SHS, ROLE_CSST_AP, ROLE_CSST_F3SCT] }

@@ -14,10 +14,7 @@
 
 compose.override.ya?ml
 
-/garage/data/
-/garage/meta/
-/garage/rpc_secret
-/garage/admin_token
+/garage/
 
 /db/data/
 

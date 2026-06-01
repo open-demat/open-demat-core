@@ -42,7 +42,8 @@
     "symfony/var-exporter": "^7.4",
     "symfony/workflow": "^7.4",
     "symfony/yaml": "^7.4",
-    "open-demat/admin-bundle": "dev-master"
+    "open-demat/admin-bundle": "dev-master",
+    "open-demat/example-bundle": "dev-main"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
@@ -106,6 +107,13 @@
     "issues": "https://github.com/open-demat/open-demat-core/issues"
   },
   "repositories": [
+    {
+      "type": "path",
+      "url": "../open-demat-example-bundle",
+      "options": {
+        "symlink": true
+      }
+    },
     {
       "type": "vcs",
       "url": "https://gitlab.u-pec.fr/maxime.six/open-demat-admin-bundle.git"

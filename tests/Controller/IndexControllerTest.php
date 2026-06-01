@@ -14,12 +14,11 @@ final class IndexControllerTest extends WebTestCase
         $this->assertResponseRedirects('https://admin.test/accueil', 302);
     }
 
-    public function test_cas_route_redirects_to_caslogin_when_not_authenticated(): void
+    public function test_cas_route_redirects_to_login_choice_when_not_authenticated(): void
     {
         $client = static::createClient();
         $client->request('GET', '/cas');
 
-        // /cas -> redirectToRoute('caslogin', _target_path=/cas)
-        $this->assertResponseRedirects('/cas/login?_target_path=/cas', 302);
+        $this->assertResponseRedirects('/login?_target_path=/cas', 302);
     }
 }

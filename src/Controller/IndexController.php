@@ -44,7 +44,7 @@ class IndexController extends AbstractController
     public function accueil(Request $request): Response
     {
         if (!$this->getUser()) {
-            return $this->redirectToRoute('caslogin', [
+            return $this->redirectToRoute('app_login', [
                 '_target_path' => $request->getRequestUri(),
             ]);
         }
@@ -56,7 +56,7 @@ class IndexController extends AbstractController
     public function indexCas(Request $request): Response
     {
         if (!$this->getUser()) {
-            return $this->redirectToRoute('caslogin', [
+            return $this->redirectToRoute('app_login', [
                 '_target_path' => $request->getRequestUri(),
             ]);
         }
