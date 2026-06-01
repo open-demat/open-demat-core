@@ -47,7 +47,9 @@
   "prefer-stable": true,
   "autoload": {
     "psr-4": {
-      "OpenDemat\\Core\\": "src/"
+      "OpenDemat\\Core\\": "src/",
+      "OpenDemat\\AdminBundle\\": "app_open_demat/admin-bundle/src/",
+      "OpenDemat\\ExampleBundle\\": "app_open_demat/example-bundle/src/"
     }
   },
   "autoload-dev": {

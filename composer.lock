@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1246deb2fb449e123314fe8b72750657",
+    "content-hash": "97dea611787f31cd127e62d37105865f",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -3339,58 +3339,6 @@
             },
             "abandoned": true,
             "time": "2021-12-15T12:32:42+00:00"
-        },
-        {
-            "name": "open-demat/admin-bundle",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://gitlab.u-pec.fr/maxime.six/open-demat-admin-bundle.git",
-                "reference": "91e45a815dcd4c9e65b33e60aca44f3c419a728d"
-            },
-            "require": {
-                "php": "^8.4",
-                "symfony/framework-bundle": "^7.4"
-            },
-            "default-branch": true,
-            "type": "open-demat-bundle",
-            "autoload": {
-                "psr-4": {
-                    "OpenDemat\\AdminBundle\\": "src/"
-                }
-            },
-            "license": [
-                "proprietary"
-            ],
-            "description": "Open Demat administration bundle",
-            "time": "2026-05-26T09:07:42+00:00"
-        },
-        {
-            "name": "open-demat/example-bundle",
-            "version": "dev-main",
-            "dist": {
-                "type": "path",
-                "url": "../open-demat-example-bundle",
-                "reference": "5e37bc453d41a923d7ca3310c8017032879db982"
-            },
-            "require": {
-                "php": "^8.4",
-                "symfony/framework-bundle": "^7.4"
-            },
-            "type": "open-demat-bundle",
-            "autoload": {
-                "psr-4": {
-                    "OpenDemat\\ExampleBundle\\": "src/"
-                }
-            },
-            "license": [
-                "AGPL-3.0-or-later"
-            ],
-            "description": "Open Demat example bundle",
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
         },
         {
             "name": "php-http/client-common",
@@ -12328,10 +12276,7 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "open-demat/admin-bundle": 20,
-        "open-demat/example-bundle": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
