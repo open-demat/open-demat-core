@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.13.0](https://github.com/open-demat/open-demat-core/compare/v1.12.0...v1.13.0) (2026-06-02)
+
+
+### Features
+
+* add local ldap and saml2 authentication ([e9bd4a9](https://github.com/open-demat/open-demat-core/commit/e9bd4a95ab481f457c8c754d76e3efcc026bd182))
+
+## [1.12.0](https://github.com/open-demat/open-demat-core/compare/v1.11.2...v1.12.0) (2026-06-01)
+
+
+### Features
+
+* add configurable theme and static logo assets ([75627fa](https://github.com/open-demat/open-demat-core/commit/75627fa4782391983d0d22858f36b8468acd69f3))
+* add dev shibboleth and example bundle support ([c7cae44](https://github.com/open-demat/open-demat-core/commit/c7cae4437f17f34273bedd46adbc348cb273bceb))
+
+
+### Bug Fixes
+
+* load local app bundles from clones ([53fc6a7](https://github.com/open-demat/open-demat-core/commit/53fc6a75ee8bca175ee7e9339ac66b71c8eca7ec))
+* scope active nav route prefix ([ef70000](https://github.com/open-demat/open-demat-core/commit/ef70000397dd338db582ca8185a7acd15a5ca00d))
+
+### 1.11.2 (2026-05-27)
+
+
+### Bug Fixes
+
+* add files ([cf17ad0](https://github.com/open-demat/open-demat-core/commit/cf17ad0e8425326e3f40a0160c96c8aead66c64b))
+
 ### [1.11.1](https://github.com/open-demat/open-demat-core/compare/v1.11.0...v1.11.1) (2026-03-17)
 
 ## [1.11.0](https://github.com/open-demat/open-demat-core/compare/v1.10.1...v1.11.0) (2026-03-16)

@@ -33,6 +33,10 @@ class SecurityController extends AbstractController
     #[Route('/cas/login', name: 'caslogin')]
     public function loginAction()
     {
+        if (!(bool) $this->getParameter('cas_enabled')) {
+            throw $this->createNotFoundException('CAS is disabled.');
+        }
+
         $target = urlencode($this->getParameter('cas_login_target'));
         $url = 'https://' . $this->getParameter('cas_host') . ':' . $this->getParameter('cas_port') . $this->getParameter('cas_path') . '/login?service=';
         return $this->redirect($url . $target . '/cas/force');
@@ -54,6 +58,10 @@ class SecurityController extends AbstractController
     #[Route('/llogout', name: 'llogout')]
     public function logoutAction()
     {
+        if (!(bool) $this->getParameter('cas_enabled')) {
+            return $this->redirectToRoute('app_login');
+        }
+
         return $this->redirect($_ENV['CAS_LOGOUT_URL']);
     }
 
@@ -63,19 +71,23 @@ class SecurityController extends AbstractController
         throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
     }
 
-    #[Route('/login', name: 'login')]
+    #[Route('/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils, Request $request): Response
     {
         if ($this->getUser()) {
-            return $this->redirectToRoute('formCandidat');
+            return $this->redirectToRoute('app_home');
         }
 
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
 
-        return $this->render('bundles/twigBundle/Exception/error401.html.twig', [
-            'status_code' => '401',
-            'status_text' => ["COD-34 : Une erreur est survenue"]
+        return $this->render('security/login.html.twig', [
+            'error' => $error,
+            'last_username' => $lastUsername,
+            'target_path' => $request->query->get('_target_path', '/'),
+            'saml2_enabled' => (bool) $this->getParameter('saml2_enabled'),
+            'ldap_enabled' => (bool) $this->getParameter('ldap_enabled'),
+            'cas_enabled' => (bool) $this->getParameter('cas_enabled'),
         ]);
     }
 

@@ -10,6 +10,8 @@ twig:
         admin_url: '%admin_url%'
         organization_name: '%organization_name%'
         organization_logo: '%organization_logo%'
+        theme_primary_color: '%theme_primary_color%'
+        theme_primary_dark_color: '%theme_primary_dark_color%'
 
 
 when@test:

@@ -41,7 +41,7 @@ class UserDocument
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private User $user;
 
-    // Fichier stocké (MinIO/Flysystem via Document)
+    // Fichier stocké (S3/Flysystem via Document)
     #[ORM\ManyToOne(targetEntity: Document::class)]
     #[ORM\JoinColumn(name: 'document_id', referencedColumnName: 'id', nullable: false, onDelete: 'RESTRICT')]
     private Document $document;

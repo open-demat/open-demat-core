@@ -1,0 +1,88 @@
+services:
+  db:
+    image: postgres:17.7-alpine
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      - TZ=Europe/Paris
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=process_db_test
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+
+  garage:
+    image: dxflrs/garage:v2.2.0
+    restart: unless-stopped
+    ports:
+      - "3910:3900"
+      - "3911:3901"
+      - "3912:3902"
+      - "3913:3903"
+    environment:
+      - GARAGE_ALLOW_WORLD_READABLE_SECRETS=true
+    volumes:
+      - ./garage/garage.toml:/etc/garage.toml
+      - ./garage/meta:/var/lib/garage/meta
+      - ./garage/data:/var/lib/garage/data
+      - ./garage/rpc_secret:/var/lib/garage/rpc_secret
+      - ./garage/admin_token:/var/lib/garage/admin_token
+
+  garage-init:
+    build:
+      context: ./docker/garage
+    profiles: ["setup"]
+    depends_on:
+      - garage
+    environment:
+      - GARAGE_ALLOW_WORLD_READABLE_SECRETS=true
+      - GARAGE_BUCKET=${GARAGE_BUCKET:-documents}
+      - GARAGE_KEY_NAME=${GARAGE_KEY_NAME:-open-demat-core}
+      - GARAGE_CAPACITY=${GARAGE_CAPACITY:-1G}
+    volumes:
+      - ./garage/garage.toml:/etc/garage.toml:ro
+      - ./garage/meta:/var/lib/garage/meta
+      - ./garage/data:/var/lib/garage/data
+      - ./garage/rpc_secret:/var/lib/garage/rpc_secret
+      - ./garage/admin_token:/var/lib/garage/admin_token
+      - ./docker/garage/init-garage.sh:/usr/local/bin/init-garage.sh:ro
+
+  garage-webui:
+    image: khairul169/garage-webui:latest
+    profiles: ["tools"]
+    restart: unless-stopped
+    depends_on:
+      - garage
+    ports:
+      - "3909:3909"
+    environment:
+      - CONFIG_PATH=/etc/garage.toml
+      - API_BASE_URL=http://garage:3903
+      - S3_ENDPOINT_URL=http://garage:3900
+      - S3_REGION=garage
+    volumes:
+      - ./garage/garage.toml:/etc/garage.toml:ro
+      - ./garage/admin_token:/var/lib/garage/admin_token:ro
+
+  shibboleth-sp:
+    build:
+      context: ./docker/shibboleth-sp
+    profiles: ["shibboleth"]
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8080:80"
+    volumes:
+      - ./docker/shibboleth-sp/shibboleth2.xml:/etc/shibboleth/shibboleth2.xml:ro
+      - ./docker/shibboleth-sp/attribute-map.xml:/etc/shibboleth/attribute-map.xml:ro
+      - ./docker/shibboleth-sp/idp-metadata.xml:/etc/shibboleth/idp-metadata.xml:ro
+
+  shibboleth-dev-proxy:
+    image: httpd:2.4-alpine
+    profiles: ["shibboleth-dev"]
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./docker/shibboleth-dev-proxy/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro

@@ -4,5 +4,5 @@ flysystem:
       adapter: 'aws'
       options:
         client: 'Aws\S3\S3Client'
-        bucket: '%env(MINIO_BUCKET)%'
+        bucket: '%env(S3_BUCKET)%'
         prefix: ''   # optionnel: 'docs/'
