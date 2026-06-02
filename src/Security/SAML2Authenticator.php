@@ -4,147 +4,114 @@ declare(strict_types=1);
 
 namespace OpenDemat\Core\Security;
 
-use Doctrine\ORM\EntityManagerInterface;
 use OpenDemat\Core\Entity\User;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
-use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
-final class SAML2Authenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
+final class SAML2Authenticator extends AbstractAuthenticator
 {
     use TargetPathTrait;
 
+    /**
+     * @param array<string, string> $attributeMap
+     */
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
+        private readonly Saml2AuthFactory $authFactory,
+        private readonly UserProvisioner $userProvisioner,
+        private readonly UrlGeneratorInterface $urlGenerator,
         private readonly bool $enabled,
-        private readonly string $identifierAttribute,
-        private readonly string $emailAttribute,
-        private readonly string $firstNameAttribute,
-        private readonly string $lastNameAttribute,
-        private readonly string $defaultEmailDomain,
+        private readonly array $attributeMap,
         private readonly bool $autoCreateUser,
-    ) {}
+    ) {
+    }
 
     public function supports(Request $request): bool
     {
-        return $this->enabled && null !== $this->getAttribute($request, $this->identifierAttribute);
+        return $this->enabled
+            && $request->attributes->get('_route') === 'saml2_acs'
+            && $request->isMethod('POST');
     }
 
     public function authenticate(Request $request): SelfValidatingPassport
     {
-        $identifier = $this->getAttribute($request, $this->identifierAttribute);
+        $auth = $this->authFactory->createAuth();
+        $requestId = $request->getSession()->get('saml2_request_id');
 
-        if (null === $identifier) {
+        try {
+            $auth->processResponse(is_string($requestId) ? $requestId : null);
+        } catch (\Throwable $exception) {
+            throw new AuthenticationException('Reponse SAML2 invalide : ' . $exception->getMessage(), 0, $exception);
+        }
+
+        $errors = $auth->getErrors();
+        if ($errors !== []) {
+            throw new AuthenticationException('Reponse SAML2 invalide : ' . implode(', ', $errors));
+        }
+
+        if (!$auth->isAuthenticated()) {
+            throw new AuthenticationException('Authentification SAML2 refusee.');
+        }
+
+        $attributes = $auth->getAttributes();
+        $identifier = $this->attributeValue($attributes, $this->attributeMap['identifier'] ?? '') ?? $auth->getNameId();
+
+        if (!is_string($identifier) || trim($identifier) === '') {
             throw new AuthenticationException('Identifiant SAML2 introuvable.');
         }
 
-        return new SelfValidatingPassport(new UserBadge($identifier, function () use ($request, $identifier): User {
-            $userRepository = $this->entityManager->getRepository(User::class);
-            $user = $userRepository->findOneBy(['username' => $identifier]);
+        $request->getSession()->remove('saml2_request_id');
 
-            if ($user instanceof User) {
-                return $user;
-            }
-
+        return new SelfValidatingPassport(new UserBadge($identifier, function () use ($attributes, $identifier): User {
             if (!$this->autoCreateUser) {
-                throw new AuthenticationException(sprintf('Aucun utilisateur avec le username : %s', $identifier));
+                throw new AuthenticationException('Creation automatique des utilisateurs SAML2 desactivee.');
             }
 
-            $user = new User();
-            $user->setUsername($identifier);
-            $user->setEmail($this->getAttribute($request, $this->emailAttribute) ?? $this->buildFallbackEmail($identifier));
-
-            $firstName = $this->getAttribute($request, $this->firstNameAttribute);
-            $lastName = $this->getAttribute($request, $this->lastNameAttribute);
-
-            if (null === $firstName || null === $lastName) {
-                [$parsedFirstName, $parsedLastName] = $this->parseNameFromIdentifier($identifier);
-                $firstName ??= $parsedFirstName;
-                $lastName ??= $parsedLastName;
-            }
-
-            $user->setPrenom($firstName);
-            $user->setNom($lastName);
-            $user->setPassword(bin2hex(random_bytes(20)));
-            $user->setRoles(['ROLE_USER']);
-
-            $this->entityManager->persist($user);
-            $this->entityManager->flush();
-
-            return $user;
+            return $this->userProvisioner->provision(
+                username: $identifier,
+                email: $this->attributeValue($attributes, $this->attributeMap['email'] ?? ''),
+                firstName: $this->attributeValue($attributes, $this->attributeMap['first_name'] ?? ''),
+                lastName: $this->attributeValue($attributes, $this->attributeMap['last_name'] ?? ''),
+                roles: ['ROLE_USER'],
+            );
         }));
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        $targetPath = $this->getTargetPath($request->getSession(), $firewallName);
-
-        if (null !== $targetPath) {
-            return new RedirectResponse($targetPath);
+        $relayState = (string) $request->request->get('RelayState', '');
+        if ($relayState !== '') {
+            return new RedirectResponse($relayState);
         }
 
-        return null;
+        return new RedirectResponse($this->urlGenerator->generate('app_home'));
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
-        return new Response($exception->getMessage(), Response::HTTP_UNAUTHORIZED);
+        $request->getSession()->getFlashBag()->add('danger', $exception->getMessage());
+
+        return new RedirectResponse($this->urlGenerator->generate('app_login'));
     }
 
-    public function start(Request $request, ?AuthenticationException $authException = null): Response
+    /**
+     * @param array<string, array<int, mixed>> $attributes
+     */
+    private function attributeValue(array $attributes, string $name): ?string
     {
-        return new Response('Authentication required by SAML2.', Response::HTTP_UNAUTHORIZED);
-    }
-
-    private function getAttribute(Request $request, string $attributeName): ?string
-    {
-        $value = $request->server->get($attributeName) ?? $request->headers->get($attributeName);
-
-        if (null === $value) {
+        if ($name === '' || !isset($attributes[$name]) || $attributes[$name] === []) {
             return null;
         }
 
-        $value = trim((string) $value);
+        $value = reset($attributes[$name]);
 
-        return '' === $value ? null : $value;
-    }
-
-    private function buildFallbackEmail(string $identifier): string
-    {
-        if (str_contains($identifier, '@')) {
-            return $identifier;
-        }
-
-        return sprintf('%s@%s', $identifier, $this->defaultEmailDomain);
-    }
-
-    private function parseNameFromIdentifier(string $identifier): array
-    {
-        $identifier = preg_replace('/@.+$/', '', trim($identifier)) ?? $identifier;
-        $identifier = str_replace(['.', '_'], ' ', $identifier);
-        $identifier = preg_replace('/\s+/', ' ', $identifier) ?? $identifier;
-        $parts = array_values(array_filter(explode(' ', $identifier), static fn (string $part): bool => '' !== $part));
-
-        if (count($parts) < 2) {
-            $name = $this->prettyName($identifier);
-
-            return [$name, $name];
-        }
-
-        $lastName = array_pop($parts);
-
-        return [$this->prettyName(implode(' ', $parts)), $this->prettyName($lastName)];
-    }
-
-    private function prettyName(string $value): string
-    {
-        return mb_convert_case(trim($value), MB_CASE_TITLE, 'UTF-8');
+        return is_scalar($value) ? trim((string) $value) : null;
     }
 }

@@ -20,20 +20,66 @@
         </div>
       {% endif %}
 
+      {% for label, messages in app.flashes %}
+        {% for message in messages %}
+          <div class="alert alert-{{ label == 'danger' ? 'danger' : label }}" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endfor %}
+
       <div class="d-grid gap-3">
-        {% if saml2_enabled and saml2_login_url %}
+        <form method="post" action="{{ path('app_login') }}" class="border rounded bg-white p-3">
+          <input type="hidden" name="auth_method" value="local">
+          <input type="hidden" name="_target_path" value="{{ target_path }}">
+          <div class="mb-2">
+            <label class="form-label" for="local_username">Identifiant local</label>
+            <input class="form-control" id="local_username" name="_username" value="{{ last_username }}" autocomplete="username">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="local_password">Mot de passe</label>
+            <input class="form-control" id="local_password" name="_password" type="password" autocomplete="current-password">
+          </div>
+          <button class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" type="submit">
+            <i class="bx bx-lock-open" aria-hidden="true"></i>
+            <span>Connexion locale</span>
+          </button>
+        </form>
+
+        {% if ldap_enabled %}
+          <form method="post" action="{{ path('app_login') }}" class="border rounded bg-white p-3">
+            <input type="hidden" name="auth_method" value="ldap">
+            <input type="hidden" name="_target_path" value="{{ target_path }}">
+            <div class="mb-2">
+              <label class="form-label" for="ldap_username">Identifiant LDAP</label>
+              <input class="form-control" id="ldap_username" name="_username" autocomplete="username">
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="ldap_password">Mot de passe LDAP</label>
+              <input class="form-control" id="ldap_password" name="_password" type="password" autocomplete="current-password">
+            </div>
+            <button class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-2" type="submit">
+              <i class="bx bx-directory" aria-hidden="true"></i>
+              <span>Connexion LDAP</span>
+            </button>
+          </form>
+        {% endif %}
+
+        {% if saml2_enabled %}
           <a class="btn btn-primary btn-lg d-flex align-items-center justify-content-center gap-2"
-             href="{{ saml2_login_url }}">
+             href="{{ path('saml2_login', {'_target_path': target_path}) }}">
             <i class="bx bx-id-card" aria-hidden="true"></i>
             <span>Connexion SAML2</span>
           </a>
         {% endif %}
 
-        <a class="btn btn-outline-primary btn-lg d-flex align-items-center justify-content-center gap-2"
-           href="{{ path('caslogin', {'_target_path': target_path}) }}">
-          <i class="bx bx-log-in-circle" aria-hidden="true"></i>
-          <span>Connexion CAS</span>
-        </a>
+        {% if cas_enabled %}
+          <a class="btn btn-outline-primary btn-lg d-flex align-items-center justify-content-center gap-2"
+             href="{{ path('caslogin', {'_target_path': target_path}) }}">
+            <i class="bx bx-log-in-circle" aria-hidden="true"></i>
+            <span>Connexion CAS</span>
+          </a>
+        {% endif %}
       </div>
     </div>
   </div>

@@ -19,9 +19,7 @@ open_demat_admin:
     email_attribute: '%env(default::SAML2_EMAIL_ATTRIBUTE)%'
     first_name_attribute: '%env(default::SAML2_FIRST_NAME_ATTRIBUTE)%'
     last_name_attribute: '%env(default::SAML2_LAST_NAME_ATTRIBUTE)%'
-    default_email_domain: '%env(default::SAML2_DEFAULT_EMAIL_DOMAIN)%'
     auto_create_user: '%env(default::SAML2_AUTO_CREATE_USER)%'
-    login_url: '%env(default::SAML2_LOGIN_URL)%'
   s3:
     endpoint: '%env(default::S3_ENDPOINT)%'
     region: '%env(default::S3_REGION)%'
