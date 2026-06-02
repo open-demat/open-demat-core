@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.13.0](https://github.com/open-demat/open-demat-core/compare/v1.12.0...v1.13.0) (2026-06-02)
+
+
+### Features
+
+* add local ldap and saml2 authentication ([e9bd4a9](https://github.com/open-demat/open-demat-core/commit/e9bd4a95ab481f457c8c754d76e3efcc026bd182))
+
 ## [1.12.0](https://github.com/open-demat/open-demat-core/compare/v1.11.2...v1.12.0) (2026-06-01)
 
 
