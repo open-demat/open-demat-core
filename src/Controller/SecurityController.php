@@ -77,8 +77,8 @@ class SecurityController extends AbstractController
             'error' => $error,
             'last_username' => $lastUsername,
             'target_path' => $request->query->get('_target_path', '/'),
-            'shibboleth_enabled' => (bool) $this->getParameter('shibboleth_enabled'),
-            'shibboleth_login_url' => (string) $this->getParameter('shibboleth_login_url'),
+            'saml2_enabled' => (bool) $this->getParameter('saml2_enabled'),
+            'saml2_login_url' => (string) $this->getParameter('saml2_login_url'),
         ]);
     }
 

@@ -27,7 +27,7 @@
                     <td align="left" style="padding:0;">
                       {# admin_url doit être fourni côté mailer context, comme dans CSST #}
                       <img
-                        src="{{ organization_logo|default('') ? admin_url ~ '/' ~ organization_logo : admin_url ~ '/assets/img/open-demat-imgs/system.svg' }}"
+                        src="{{ admin_url ~ '/' ~ (organization_logo|default('assets/img/open-demat-logo.png')) }}"
                         alt="{{ organization_name|default('Open Demat') }}"
                         width="160"
                         style="display:block;border:0;outline:none;text-decoration:none;max-width:160px;height:auto;">

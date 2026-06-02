@@ -17,7 +17,7 @@ class StaticDocumentService
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly FilesystemOperator $documentsStorage,
-        private readonly string $minioBucket,
+        private readonly string $s3Bucket,
     ) {
     }
 
@@ -27,6 +27,22 @@ class StaticDocumentService
             'code' => $code,
             'active' => true,
         ]);
+    }
+
+    public function deactivateByCode(string $code): bool
+    {
+        $staticDocument = $this->em->getRepository(StaticDocument::class)->findOneBy([
+            'code' => $code,
+        ]);
+
+        if (!$staticDocument instanceof StaticDocument) {
+            return false;
+        }
+
+        $staticDocument->setActive(false);
+        $this->em->flush();
+
+        return true;
     }
 
     public function storeUploadedFile(
@@ -50,7 +66,7 @@ class StaticDocumentService
             originalName: $file->getClientOriginalName(),
             mimeType: $file->getClientMimeType() ?: 'application/octet-stream',
             sizeBytes: (int) $file->getSize(),
-            bucket: $this->minioBucket,
+            bucket: $this->s3Bucket,
             checksumSha256: hash_file('sha256', $file->getPathname()) ?: null,
             uploadedBy: $managedUploadedBy,
         );

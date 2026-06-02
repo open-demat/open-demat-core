@@ -17,7 +17,7 @@ use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPasspor
 use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
-final class ShibbolethAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
+final class SAML2Authenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
 {
     use TargetPathTrait;
 
@@ -42,7 +42,7 @@ final class ShibbolethAuthenticator extends AbstractAuthenticator implements Aut
         $identifier = $this->getAttribute($request, $this->identifierAttribute);
 
         if (null === $identifier) {
-            throw new AuthenticationException('Identifiant Shibboleth introuvable.');
+            throw new AuthenticationException('Identifiant SAML2 introuvable.');
         }
 
         return new SelfValidatingPassport(new UserBadge($identifier, function () use ($request, $identifier): User {
@@ -100,7 +100,7 @@ final class ShibbolethAuthenticator extends AbstractAuthenticator implements Aut
 
     public function start(Request $request, ?AuthenticationException $authException = null): Response
     {
-        return new Response('Authentication required by Shibboleth.', Response::HTTP_UNAUTHORIZED);
+        return new Response('Authentication required by SAML2.', Response::HTTP_UNAUTHORIZED);
     }
 
     private function getAttribute(Request $request, string $attributeName): ?string

@@ -1,10 +1,11 @@
 # config/services.yaml
 parameters:
-  minio.bucket: '%env(MINIO_BUCKET)%'
+  organization_logo_default: 'assets/img/open-demat-logo.png'
+  s3.bucket: '%env(S3_BUCKET)%'
 
   admin_url: '%env(resolve:ADMIN_URL)%'
   organization_name: '%env(default::ORGANIZATION_NAME)%'
-  organization_logo: '%env(default::ORGANIZATION_LOGO)%'
+  organization_logo: '%env(default:organization_logo_default:ORGANIZATION_LOGO)%'
   theme_primary_color: '%env(default::THEME_PRIMARY_COLOR)%'
   theme_primary_dark_color: '%env(default::THEME_PRIMARY_DARK_COLOR)%'
   cas_host: '%env(CAS_HOST)%'
@@ -12,14 +13,14 @@ parameters:
   cas_path: '%env(CAS_PATH)%'
   cas_login_target: '%env(resolve:CAS_LOGIN_TARGET)%'
   cas_gateway: '%env(bool:CAS_GATEWAY)%'
-  shibboleth_enabled: '%env(bool:SHIBBOLETH_ENABLED)%'
-  shibboleth_identifier_attribute: '%env(string:SHIBBOLETH_IDENTIFIER_ATTRIBUTE)%'
-  shibboleth_email_attribute: '%env(string:SHIBBOLETH_EMAIL_ATTRIBUTE)%'
-  shibboleth_first_name_attribute: '%env(string:SHIBBOLETH_FIRST_NAME_ATTRIBUTE)%'
-  shibboleth_last_name_attribute: '%env(string:SHIBBOLETH_LAST_NAME_ATTRIBUTE)%'
-  shibboleth_default_email_domain: '%env(string:SHIBBOLETH_DEFAULT_EMAIL_DOMAIN)%'
-  shibboleth_auto_create_user: '%env(bool:SHIBBOLETH_AUTO_CREATE_USER)%'
-  shibboleth_login_url: '%env(default::SHIBBOLETH_LOGIN_URL)%'
+  saml2_enabled: '%env(bool:SAML2_ENABLED)%'
+  saml2_identifier_attribute: '%env(string:SAML2_IDENTIFIER_ATTRIBUTE)%'
+  saml2_email_attribute: '%env(string:SAML2_EMAIL_ATTRIBUTE)%'
+  saml2_first_name_attribute: '%env(string:SAML2_FIRST_NAME_ATTRIBUTE)%'
+  saml2_last_name_attribute: '%env(string:SAML2_LAST_NAME_ATTRIBUTE)%'
+  saml2_default_email_domain: '%env(string:SAML2_DEFAULT_EMAIL_DOMAIN)%'
+  saml2_auto_create_user: '%env(bool:SAML2_AUTO_CREATE_USER)%'
+  saml2_login_url: '%env(default::SAML2_LOGIN_URL)%'
 
 imports:
   - { resource: '../app_open_demat/*/Resources/config/services.yaml', type: glob, ignore_errors: true }
@@ -51,15 +52,15 @@ services:
       arguments:
           $userRepository: '@OpenDemat\Core\Repository\UserRepository'
 
-  OpenDemat\Core\Security\ShibbolethAuthenticator:
+  OpenDemat\Core\Security\SAML2Authenticator:
       arguments:
-          $enabled: '%shibboleth_enabled%'
-          $identifierAttribute: '%shibboleth_identifier_attribute%'
-          $emailAttribute: '%shibboleth_email_attribute%'
-          $firstNameAttribute: '%shibboleth_first_name_attribute%'
-          $lastNameAttribute: '%shibboleth_last_name_attribute%'
-          $defaultEmailDomain: '%shibboleth_default_email_domain%'
-          $autoCreateUser: '%shibboleth_auto_create_user%'
+          $enabled: '%saml2_enabled%'
+          $identifierAttribute: '%saml2_identifier_attribute%'
+          $emailAttribute: '%saml2_email_attribute%'
+          $firstNameAttribute: '%saml2_first_name_attribute%'
+          $lastNameAttribute: '%saml2_last_name_attribute%'
+          $defaultEmailDomain: '%saml2_default_email_domain%'
+          $autoCreateUser: '%saml2_auto_create_user%'
   
   # ------- PSR-17 (Nyholm) -------
   Nyholm\Psr7\Factory\Psr17Factory: ~
@@ -135,20 +136,20 @@ services:
     arguments:
       -
         version: 'latest'
-        region: '%env(MINIO_REGION)%'
-        endpoint: '%env(MINIO_ENDPOINT)%'
-        use_path_style_endpoint: '%env(bool:MINIO_USE_PATH_STYLE)%'
+        region: '%env(S3_REGION)%'
+        endpoint: '%env(S3_ENDPOINT)%'
+        use_path_style_endpoint: '%env(bool:S3_USE_PATH_STYLE)%'
         credentials:
-          key: '%env(MINIO_ACCESS_KEY)%'
-          secret: '%env(MINIO_SECRET_KEY)%'
+          key: '%env(S3_ACCESS_KEY)%'
+          secret: '%env(S3_SECRET_KEY)%'
           
   OpenDemat\Core\Service\AttachmentService:
     arguments:
-      $minioBucket: '%minio.bucket%'
+      $s3Bucket: '%s3.bucket%'
 
   OpenDemat\Core\Service\StaticDocumentService:
     arguments:
-      $minioBucket: '%minio.bucket%'
+      $s3Bucket: '%s3.bucket%'
   
   OpenDemat\Core\Pdf\PdfRendererInterface:
     alias: OpenDemat\Core\Pdf\PdfRenderer
