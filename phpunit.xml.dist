@@ -11,18 +11,65 @@
         <env name="KERNEL_CLASS" value="OpenDemat\Core\Kernel"/>
         <!-- Pour IndexController -->
         <env name="ADMIN_URL" value="https://admin.test"/>
+        <env name="ORGANIZATION_LOGO" value="assets/img/open-demat-logo.png"/>
+        <env name="LOCAL_ADMIN_USERNAME" value="admin"/>
+        <env name="LOCAL_ADMIN_PASSWORD" value="admin"/>
         <!-- Pour Doctrine (SQLite fichier) -->
         <env name="DATABASE_URL" value="postgresql://postgres:password@127.0.0.1:5432/process_db_test?charset=utf8"/>
         <!-- Pour SecurityController::llogout -->
+        <env name="CAS_ENABLED" value="1"/>
         <env name="CAS_LOGOUT_URL" value="https://cas.test/logout"/>
-        <env name="SHIBBOLETH_ENABLED" value="1"/>
-        <env name="SHIBBOLETH_IDENTIFIER_ATTRIBUTE" value="HTTP_EPPN"/>
-        <env name="SHIBBOLETH_EMAIL_ATTRIBUTE" value="HTTP_MAIL"/>
-        <env name="SHIBBOLETH_FIRST_NAME_ATTRIBUTE" value="HTTP_GIVENNAME"/>
-        <env name="SHIBBOLETH_LAST_NAME_ATTRIBUTE" value="HTTP_SN"/>
-        <env name="SHIBBOLETH_DEFAULT_EMAIL_DOMAIN" value="example.org"/>
-        <env name="SHIBBOLETH_AUTO_CREATE_USER" value="1"/>
-        <env name="SHIBBOLETH_LOGIN_URL" value="http://localhost:8081/accueil"/>
+        <env name="CAS_HOST" value="cas.test"/>
+        <env name="CAS_PORT" value="443"/>
+        <env name="CAS_PATH" value="/cas"/>
+        <env name="CAS_LOGIN_TARGET" value="https://admin.test"/>
+        <env name="CAS_GATEWAY" value="0"/>
+        <env name="LDAP_ENABLED" value="0"/>
+        <env name="LDAP_CONNECTION_STRING" value="ldap://localhost:389"/>
+        <env name="LDAP_BASE_DN" value="dc=example,dc=org"/>
+        <env name="LDAP_SEARCH_FILTER" value="(uid=%s)"/>
+        <env name="LDAP_BIND_DN" value=""/>
+        <env name="LDAP_BIND_PASSWORD" value=""/>
+        <env name="LDAP_IDENTIFIER_ATTRIBUTE" value="uid"/>
+        <env name="LDAP_EMAIL_ATTRIBUTE" value="mail"/>
+        <env name="LDAP_FIRST_NAME_ATTRIBUTE" value="givenName"/>
+        <env name="LDAP_LAST_NAME_ATTRIBUTE" value="sn"/>
+        <env name="LDAP_AUTO_CREATE_USER" value="1"/>
+        <env name="SAML2_ENABLED" value="1"/>
+        <env name="SAML2_STRICT" value="1"/>
+        <env name="SAML2_DEBUG" value="0"/>
+        <env name="SAML2_SP_ENTITY_ID" value="https://admin.test/saml2/metadata"/>
+        <env name="SAML2_SP_ACS_URL" value="https://admin.test/saml2/acs"/>
+        <env name="SAML2_SP_SLS_URL" value="https://admin.test/logout"/>
+        <env name="SAML2_SP_NAME_ID_FORMAT" value="urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"/>
+        <env name="SAML2_SP_X509_CERT" value=""/>
+        <env name="SAML2_SP_PRIVATE_KEY" value=""/>
+        <env name="SAML2_IDP_METADATA_FILE" value=""/>
+        <env name="SAML2_IDP_METADATA_URL" value=""/>
+        <env name="SAML2_IDP_METADATA_XML" value=""/>
+        <env name="SAML2_IDP_ENTITY_ID" value="https://idp.test/metadata"/>
+        <env name="SAML2_IDP_SSO_URL" value="https://idp.test/sso"/>
+        <env name="SAML2_IDP_SLO_URL" value="https://idp.test/slo"/>
+        <env name="SAML2_IDP_X509_CERT" value=""/>
+        <env name="SAML2_AUTHN_REQUESTS_SIGNED" value="0"/>
+        <env name="SAML2_LOGOUT_REQUEST_SIGNED" value="0"/>
+        <env name="SAML2_LOGOUT_RESPONSE_SIGNED" value="0"/>
+        <env name="SAML2_WANT_MESSAGES_SIGNED" value="0"/>
+        <env name="SAML2_WANT_ASSERTIONS_SIGNED" value="0"/>
+        <env name="SAML2_WANT_ASSERTIONS_ENCRYPTED" value="0"/>
+        <env name="SAML2_WANT_NAME_ID_ENCRYPTED" value="0"/>
+        <env name="SAML2_SIGN_METADATA" value="0"/>
+        <env name="SAML2_IDENTIFIER_ATTRIBUTE" value="uid"/>
+        <env name="SAML2_EMAIL_ATTRIBUTE" value="mail"/>
+        <env name="SAML2_FIRST_NAME_ATTRIBUTE" value="givenName"/>
+        <env name="SAML2_LAST_NAME_ATTRIBUTE" value="sn"/>
+        <env name="SAML2_AUTO_CREATE_USER" value="1"/>
+        <env name="S3_ENDPOINT" value="http://localhost:9000"/>
+        <env name="S3_REGION" value="us-east-1"/>
+        <env name="S3_BUCKET" value="documents"/>
+        <env name="S3_USE_PATH_STYLE" value="1"/>
+        <env name="S3_ACCESS_KEY" value="test"/>
+        <env name="S3_SECRET_KEY" value="test"/>
     </php>
 
     <testsuites>

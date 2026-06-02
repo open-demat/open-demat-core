@@ -9,10 +9,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
-    name: 'open-demat:minio:test',
-    description: 'Teste la connexion Symfony -> MinIO (write/read/delete)'
+    name: 'open-demat:s3:test',
+    description: 'Teste la connexion Symfony -> S3 (write/read/delete)'
 )]
-final class MinioTestCommand extends Command
+final class S3TestCommand extends Command
 {
     public function __construct(
         private readonly FilesystemOperator $documentsStorage, // @documents.storage
@@ -39,7 +39,7 @@ final class MinioTestCommand extends Command
         $output->writeln("Deleting: <info>$key</info>");
         $this->documentsStorage->delete($key);
 
-        $output->writeln('<info>OK: Symfony <-> MinIO fonctionne</info>');
+        $output->writeln('<info>OK: Symfony <-> S3 fonctionne</info>');
         return Command::SUCCESS;
     }
 }

@@ -1,7 +1,7 @@
 open_demat_admin:
   organization:
     name: '%env(default::ORGANIZATION_NAME)%'
-    logo: '%env(default::ORGANIZATION_LOGO)%'
+    logo: '%env(default:organization_logo_default:ORGANIZATION_LOGO)%'
   theme:
     primary_color: '%env(default::THEME_PRIMARY_COLOR)%'
     primary_dark_color: '%env(default::THEME_PRIMARY_DARK_COLOR)%'
@@ -13,10 +13,17 @@ open_demat_admin:
     path: '%env(default::CAS_PATH)%'
     login_target: '%env(default::CAS_LOGIN_TARGET)%'
     gateway: '%env(default::CAS_GATEWAY)%'
+  saml2:
+    enabled: '%env(default::SAML2_ENABLED)%'
+    identifier_attribute: '%env(default::SAML2_IDENTIFIER_ATTRIBUTE)%'
+    email_attribute: '%env(default::SAML2_EMAIL_ATTRIBUTE)%'
+    first_name_attribute: '%env(default::SAML2_FIRST_NAME_ATTRIBUTE)%'
+    last_name_attribute: '%env(default::SAML2_LAST_NAME_ATTRIBUTE)%'
+    auto_create_user: '%env(default::SAML2_AUTO_CREATE_USER)%'
   s3:
-    endpoint: '%env(default::MINIO_ENDPOINT)%'
-    region: '%env(default::MINIO_REGION)%'
-    bucket: '%env(default::MINIO_BUCKET)%'
-    use_path_style: '%env(default::MINIO_USE_PATH_STYLE)%'
-    access_key: '%env(default::MINIO_ACCESS_KEY)%'
-    secret_key: '%env(default::MINIO_SECRET_KEY)%'
+    endpoint: '%env(default::S3_ENDPOINT)%'
+    region: '%env(default::S3_REGION)%'
+    bucket: '%env(default::S3_BUCKET)%'
+    use_path_style: '%env(default::S3_USE_PATH_STYLE)%'
+    access_key: '%env(default::S3_ACCESS_KEY)%'
+    secret_key: '%env(default::S3_SECRET_KEY)%'

@@ -5,9 +5,9 @@
   <meta content="width=device-width, initial-scale=1" name="viewport">
 
   {% set orgName = organization_name|default('Open Demat') %}
-  {% set orgLogo = organization_logo|default('') %}
-  {% set themePrimaryColor = theme_primary_color|default('#E42535') %}
-  {% set themePrimaryDarkColor = theme_primary_dark_color|default('#B51E2A') %}
+  {% set orgLogo = organization_logo|default('assets/img/open-demat-logo.png') %}
+  {% set themePrimaryColor = theme_primary_color|default('#E30613') %}
+  {% set themePrimaryDarkColor = theme_primary_dark_color|default('#15202B') %}
 
   <title>Portail des applications {{ orgName }}</title>
   <meta name="description" content="Accédez aux applications administratives de {{ orgName }} selon vos droits.">
@@ -24,7 +24,7 @@
     :root {
       --open-demat-red: {{ themePrimaryColor }};
       --open-demat-red-dark: {{ themePrimaryDarkColor }};
-      --portal-red: var(--open-demat-red, #E42535);
+      --portal-red: var(--open-demat-red, #E30613);
       --portal-red-dark: var(--open-demat-red-dark, #b91c2b);
       --portal-soft-bg: #f7f7f8;
     }

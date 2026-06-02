@@ -58,7 +58,8 @@ final class CasAuthenticator extends AbstractAuthenticator implements Authentica
         private readonly CasUserProviderInterface $userProvider,
         private readonly HttpFoundationFactoryInterface $httpFoundationFactory,
         private readonly HttpMessageFactoryInterface $httpMessageFactory,
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
+        private readonly bool $enabled,
     ) {}
 
     public function authenticate(Request $request): SelfValidatingPassport
@@ -184,7 +185,7 @@ final class CasAuthenticator extends AbstractAuthenticator implements Authentica
 
     public function supports(Request $request): bool
     {
-        return $this->cas->supportAuthentication($this->toPsrRequest($request));
+        return $this->enabled && $this->cas->supportAuthentication($this->toPsrRequest($request));
     }
 
     private function toPsrRequest(Request $request): ServerRequestInterface

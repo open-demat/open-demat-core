@@ -35,21 +35,19 @@ security:
 
     main:
       lazy: true
-      provider: chain_provider
+      provider: app_user_provider
       custom_authenticators:
-        - OpenDemat\Core\Security\ShibbolethAuthenticator
+        - OpenDemat\Core\Security\LocalAdminAuthenticator
+        - OpenDemat\Core\Security\LdapAuthenticator
+        - OpenDemat\Core\Security\SAML2Authenticator
         - OpenDemat\Core\Security\CasAuthenticator
-      login_link:
-        check_route: auth-check
-        signature_properties: ['email']
-        lifetime: 950400
-        max_uses: 150
       entry_point: OpenDemat\Core\Security\LoginChoiceEntryPoint
       logout:
         path: /logout
 
   access_control:
     - { path: ^/login$, roles: PUBLIC_ACCESS }
+    - { path: ^/saml2, roles: PUBLIC_ACCESS }
     - { path: ^/cas/login, roles: PUBLIC_ACCESS }
     - { path: ^/cas/force, roles: PUBLIC_ACCESS }
     - { path: ^/llogout, roles: PUBLIC_ACCESS }

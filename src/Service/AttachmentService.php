@@ -43,7 +43,7 @@ class AttachmentService
             private readonly FilesystemOperator $documentsStorage,
             private readonly ProcessAttachmentRepository $repo,
             private readonly UserDocumentRepository $userDocRepo,
-            private readonly string $minioBucket,
+            private readonly string $s3Bucket,
     ) {}
 
     /**
@@ -79,7 +79,7 @@ class AttachmentService
                 originalName: $file->getClientOriginalName(),
                 mimeType: $file->getClientMimeType() ?: 'application/octet-stream',
                 sizeBytes: (int) $file->getSize(),
-                bucket: $this->minioBucket, // ✅ FIX
+                bucket: $this->s3Bucket, // ✅ FIX
                 checksumSha256: hash_file('sha256', $file->getPathname()),
                 uploadedBy: $uploadedBy,
             );
@@ -220,7 +220,7 @@ class AttachmentService
 
 
     /**
-     * Remplace le contenu du Document existant (même UUID => même key MinIO),
+     * Remplace le contenu du Document existant (même UUID => même key S3),
      * et met à jour ses métadonnées.
      *
      * Ne touche PAS aux champs ProcessAttachment (process/type/caseId).
@@ -237,7 +237,7 @@ class AttachmentService
 
         $key = 'documents/' . $document->getId()->toRfc4122();
 
-        // 1) Upload / overwrite dans MinIO
+        // 1) Upload / overwrite dans S3
         $stream = fopen($newFile->getPathname(), 'rb');
         try {
             $mime = $newFile->getClientMimeType() ?: 'application/octet-stream';
