@@ -1,19 +1,17 @@
 <?php
 
-return [
-    Symfony\Bundle\FrameworkBundle\FrameworkBundle::class => ['all' => true],
-    Symfony\Bundle\TwigBundle\TwigBundle::class => ['all' => true],
-    Doctrine\Bundle\DoctrineBundle\DoctrineBundle::class => ['all' => true],
-    Symfony\Bundle\SecurityBundle\SecurityBundle::class => ['all' => true],  // <= AJOUT
-    Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle::class => ['all' => true],
-    Symfony\Bundle\DebugBundle\DebugBundle::class => ['dev' => true, 'test' => true],
-    Symfony\Bundle\WebProfilerBundle\WebProfilerBundle::class => ['dev' => true, 'test' => true],
-    EcPhp\CasBundle\CasBundle::class => ['all' => true],
-    loophp\PsrHttpMessageBridgeBundle\PsrHttpMessageBridgeBundle::class => ['all' => true],
-    Symfony\Bundle\MonologBundle\MonologBundle::class => ['all' => true],
-    League\FlysystemBundle\FlysystemBundle::class => ['all' => true],
-    OpenDemat\AdminBundle\AdminBundle::class => ['all' => true],
-    OpenDemat\ExampleBundle\ExampleBundle::class => ['all' => true],
+$coreFile = __DIR__ . '/bundles.core.php';
+$localFile = __DIR__ . '/bundles.local.php';
 
-    // Add project-specific OpenDemat\*Bundle classes here in deployment overlays.
-];
+$core = file_exists($coreFile) ? require $coreFile : [];
+$local = file_exists($localFile) ? require $localFile : [];
+
+if (!is_array($core)) {
+    $core = [];
+}
+
+if (!is_array($local)) {
+    $local = [];
+}
+
+return array_merge($core, $local);
