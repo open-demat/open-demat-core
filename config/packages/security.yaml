@@ -13,9 +13,6 @@ security:
       algorithm: auto
 
   providers:
-    chain_provider:
-      chain:
-        providers: [in_memory, cas_user_provider]
     app_user_provider:
       entity:
         class: OpenDemat\Core\Entity\User

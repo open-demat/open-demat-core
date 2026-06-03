@@ -7,6 +7,7 @@ initial d'une instance **Open Demat** :
 - PHP 8.5 (via Sury)
 - PostgreSQL 17
 - Composer
+- Supervisor
 - Utilisateur de déploiement
 - Instance Open Demat
 
@@ -22,7 +23,7 @@ Testé sur **Debian 12 (Bookworm)**.
 ```bash
 sudo apt update
 sudo apt install -y \
-  curl wget git unzip ca-certificates lsb-release gnupg
+  curl wget git unzip ca-certificates lsb-release gnupg supervisor
 ```
 
 ---
@@ -281,7 +282,44 @@ Le script fait un `git pull --ff-only`, régénère `composer.json` avec
 
 ---
 
-## 10. Ports utilisés
+## 10. Worker mail avec Supervisor
+
+Les emails Open Demat sont envoyés via Symfony Messenger. Les messages mail sont
+déposés dans la file Doctrine `async`, puis traités par un worker :
+
+```bash
+php bin/console messenger:consume async
+```
+
+En production, installer ce worker avec Supervisor :
+
+```bash
+sudo cp docs/supervisor-open-demat-mailer.conf /etc/supervisor/conf.d/open-demat-mailer.conf
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl status open-demat-mailer:*
+```
+
+Commandes utiles :
+
+```bash
+sudo supervisorctl restart open-demat-mailer:*
+sudo supervisorctl tail -f open-demat-mailer:*
+```
+
+La configuration fournie suppose :
+
+- projet dans `/var/www/open-demat` ;
+- utilisateur système `deploy` ;
+- environnement `prod` ;
+- logs dans `/var/log/supervisor/open-demat-mailer.log`.
+
+Adapter `docs/supervisor-open-demat-mailer.conf` si le chemin, l'utilisateur ou
+l'environnement diffère.
+
+---
+
+## 11. Ports utilisés
 
 | Service    | Port     |
 | ---------- | -------- |
@@ -291,16 +329,17 @@ Le script fait un `git pull --ff-only`, régénère `composer.json` avec
 
 ---
 
-## 11. Vérifications rapides
+## 12. Vérifications rapides
 
 ```bash
 php -v
 composer --version
 psql --version
+systemctl status supervisor
+supervisorctl status
 systemctl status apache2
 systemctl status php8.5-fpm
 systemctl status postgresql
 php bin/console lint:container
 php bin/console debug:router
 ```
-
