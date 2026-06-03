@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.14.0](https://github.com/open-demat/open-demat-core/compare/v1.13.0...v1.14.0) (2026-06-03)
+
+
+### Features
+
+* load local bundle configuration ([bf3b9be](https://github.com/open-demat/open-demat-core/commit/bf3b9be3dbf9cf2039475923b64e27f1d00e1936))
+
 ## [1.13.0](https://github.com/open-demat/open-demat-core/compare/v1.12.0...v1.13.0) (2026-06-02)
 
 
