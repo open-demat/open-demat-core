@@ -29,6 +29,9 @@ composer install
 composer test
 ```
 
+Pour une installation serveur et le démarrage initial d'une instance, voir
+`INSTALL.md`.
+
 Pour une installation pas a pas avec base de donnees, stockage S3,
 authentification CAS/Shibboleth et ajout de bundles, voir
 `docs/getting-started.md`.
@@ -63,20 +66,6 @@ documentées.
 
 Cette exception ne couvre pas les modifications du cœur, ni le code copié depuis
 le cœur vers un bundle. Toute modification du cœur reste soumise à l’AGPLv3.
-
-## Support commercial
-
-Un support professionnel est disponible pour :
-
-- installation et configuration ;
-- maintenance corrective et évolutive ;
-- hébergement managé ;
-- intégration avec LDAP, CAS, SAML, API métiers ;
-- développement de bundles spécifiques ;
-- formation administrateurs et utilisateurs ;
-- accompagnement au déploiement.
-
-Contact : contact@example.com
 
 # Architecture générale
 
@@ -338,3 +327,6 @@ Cette architecture permet :
 * une gestion centralisée des dépendances
 * une CI maîtrisée
 * un système modulaire robuste adapté aux besoins institutionnels de l’Open Demat
+
+Open Demat est à l'origine une création de la DSI de l'Université Paris-Est
+Créteil (UPEC).

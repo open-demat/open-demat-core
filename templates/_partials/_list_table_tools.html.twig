@@ -4,6 +4,7 @@
 
 {# config attendu :
   {
+    ajax: true|false (optionnel),
     items: ".js-list-item",
     cards: ".js-list-card" (optionnel),
     cardsContainer: "#cardsWrap" (optionnel),
@@ -24,6 +25,11 @@
       headers: ".js-sort",
       defaultKey: "id",
       defaultDir: "desc"
+    },
+    pagination: {
+      enabled: true,
+      defaultPerPage: 10,
+      scrollOnPageChange: false
     }
   }
 #}
@@ -31,6 +37,7 @@
 {% set config = config|default({}) %}
 {% set wrapperId = wrapper_id|default(uid ~ '_tools') %}
 {% set searchId = search_id|default(uid ~ '_search') %}
+{% set perPageId = uid ~ '_per_page' %}
 {% set defaultFilter = config.filter.default|default('ALL') %}
 {% set placeholder = search_placeholder|default('Rechercher…') %}
 
@@ -91,6 +98,32 @@
       {% endif %}
     </div>
 
+    {# PAGINATION TOOLS #}
+    <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center justify-content-between mt-3 pt-3 border-top">
+      <div class="d-flex align-items-center gap-2">
+        <label for="{{ perPageId }}" class="small text-muted mb-0">Afficher</label>
+
+        <select id="{{ perPageId }}" class="form-select form-select-sm" style="width:auto;">
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="100">100</option>
+          <option value="ALL">Tout</option>
+        </select>
+
+        <span class="small text-muted">éléments</span>
+      </div>
+
+      <div class="d-flex flex-column flex-sm-row gap-2 align-items-sm-center">
+        <div class="small text-muted js-pagination-info">
+          —
+        </div>
+
+        <nav aria-label="Pagination de la liste">
+          <ul class="pagination pagination-sm mb-0 js-pagination"></ul>
+        </nav>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -100,13 +133,30 @@
     const root = document.querySelector('[data-list-tools="{{ uid }}"]');
     if (!root) return;
 
+    if (root.dataset.listToolsInitialized === '1') {
+      return;
+    }
+
+    root.dataset.listToolsInitialized = '1';
+
     const config = JSON.parse(root.getAttribute('data-config') || '{}');
+    const storageKey = 'list_tools_state_{{ uid }}';
+
+    const ajaxMode = config.ajax === true;
 
     const searchInput = document.getElementById('{{ searchId }}');
+    const perPageSelect = document.getElementById('{{ perPageId }}');
+
     const itemsSelector = config.items || '.js-list-item';
     const cardsSelector = config.cards || null;
 
-    const emptyState = config.emptyState ? document.querySelector(config.emptyState) : null;
+    function resolveTableWrap() {
+      return config.tableWrap ? document.querySelector(config.tableWrap) : null;
+    }
+
+    function resolveEmptyState() {
+      return config.emptyState ? document.querySelector(config.emptyState) : null;
+    }
 
     const filterAttr = (config.filter && config.filter.attr) ? config.filter.attr : 'data-status';
     const filterButtonsSelector = (config.filter && config.filter.buttons) ? config.filter.buttons : '.js-filter-btn';
@@ -115,23 +165,69 @@
     const defaultFilter = (config.filter && config.filter.default) ? config.filter.default : 'ALL';
 
     const sortHeadersSelector = (config.sort && config.sort.headers) ? config.sort.headers : '.js-sort';
+
+    const paginationEnabled = !(config.pagination && config.pagination.enabled === false);
+    const scrollOnPageChange = !(config.pagination && config.pagination.scrollOnPageChange === false);
+
+    const defaultPerPage = (config.pagination && config.pagination.defaultPerPage)
+      ? String(config.pagination.defaultPerPage)
+      : '10';
+
+    const paginationInfo = root.querySelector('.js-pagination-info');
+    const paginationList = root.querySelector('.js-pagination');
+
     let currentSortKey = (config.sort && config.sort.defaultKey) ? config.sort.defaultKey : null;
     let currentSortDir = (config.sort && config.sort.defaultDir) ? config.sort.defaultDir : 'asc';
+    let currentFilter = defaultFilter;
+    let currentPage = 1;
+    let currentPerPage = defaultPerPage;
 
     function getAllItems() {
       const tableItems = Array.from(document.querySelectorAll(itemsSelector));
       const cardItems = cardsSelector ? Array.from(document.querySelectorAll(cardsSelector)) : [];
+
       return { tableItems, cardItems };
     }
 
-    function normalize(s) {
-      return (s || '').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+    function normalize(value) {
+      return (value || '')
+        .toString()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '');
     }
 
     function buildSearchString(el) {
-      const ds = el.getAttribute('data-search');
-      if (ds && ds.trim().length) return normalize(ds);
+      const fieldsAttr = (config.search && config.search.fieldsAttr)
+        ? config.search.fieldsAttr
+        : 'data-search';
+
+      const ds = el.getAttribute(fieldsAttr);
+
+      if (ds && ds.trim().length) {
+        return normalize(ds);
+      }
+
       return normalize(el.textContent || '');
+    }
+
+    function getActiveFilter() {
+      const activeBtn = root.querySelector(filterButtonsSelector + '.active')
+        || root.querySelector(filterButtonsSelector + '[aria-pressed="true"]');
+
+      return activeBtn ? (activeBtn.getAttribute('data-filter') || defaultFilter) : defaultFilter;
+    }
+
+    function getFilteredItems(list) {
+      const q = normalize(searchInput ? searchInput.value : '');
+
+      return list.filter(el => {
+        const v = el.getAttribute(filterAttr) || '';
+        const okFilter = (currentFilter === 'ALL') || (v === currentFilter);
+        const okSearch = !q || buildSearchString(el).includes(q);
+
+        return okFilter && okSearch;
+      });
     }
 
     function computeCounts() {
@@ -146,7 +242,7 @@
         counts.set(v, (counts.get(v) || 0) + 1);
       });
 
-      document.querySelectorAll(countSelector).forEach(span => {
+      root.querySelectorAll(countSelector).forEach(span => {
         const code = span.getAttribute('data-count');
         const n = counts.get(code) || 0;
         span.textContent = '(' + n + ')';
@@ -154,8 +250,9 @@
     }
 
     function setActiveButton(filter) {
-      document.querySelectorAll(filterButtonsSelector).forEach(btn => {
+      root.querySelectorAll(filterButtonsSelector).forEach(btn => {
         const isActive = btn.getAttribute('data-filter') === filter;
+
         btn.classList.toggle('btn-primary', isActive);
         btn.classList.toggle('active', isActive);
 
@@ -168,9 +265,17 @@
               !btn.classList.contains('btn-outline-info')) {
             btn.classList.add('btn-outline-primary');
           }
+
           btn.classList.remove('btn-primary');
         } else {
-          btn.classList.remove('btn-outline-primary','btn-outline-secondary','btn-outline-success','btn-outline-danger','btn-outline-warning','btn-outline-info');
+          btn.classList.remove(
+            'btn-outline-primary',
+            'btn-outline-secondary',
+            'btn-outline-success',
+            'btn-outline-danger',
+            'btn-outline-warning',
+            'btn-outline-info'
+          );
         }
 
         btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
@@ -178,65 +283,256 @@
     }
 
     function updateFilterLabel(filter) {
-      const labelEl = document.querySelector(filterLabelSelector);
+      const labelEl = root.querySelector(filterLabelSelector);
       if (!labelEl) return;
 
-      const btn = Array.from(document.querySelectorAll(filterButtonsSelector))
+      const btn = Array.from(root.querySelectorAll(filterButtonsSelector))
         .find(b => b.getAttribute('data-filter') === filter);
 
-      labelEl.textContent = btn ? btn.textContent.replace(/\(\d+\)\s*$/, '').trim() : filter;
+      labelEl.textContent = btn
+        ? btn.textContent.replace(/\(\d+\)\s*$/, '').trim()
+        : filter;
     }
 
-    function applyFilterAndSearch(filter) {
-      const q = normalize(searchInput ? searchInput.value : '');
-      const { tableItems, cardItems } = getAllItems();
+    function updatePaginationInfo(totalVisible) {
+      if (!paginationInfo) return;
 
-      function applyOn(list) {
-        let visible = 0;
-        list.forEach(el => {
-          const v = el.getAttribute(filterAttr) || '';
-          const okFilter = (filter === 'ALL') || (v === filter);
-          const okSearch = !q || buildSearchString(el).includes(q);
-
-          const show = okFilter && okSearch;
-          el.classList.toggle('d-none', !show);
-          if (show) visible++;
-        });
-        return visible;
+      if (!paginationEnabled || currentPerPage === 'ALL') {
+        paginationInfo.textContent = totalVisible + ' élément' + (totalVisible > 1 ? 's' : '');
+        return;
       }
 
-      const visibleTable = applyOn(tableItems);
-      const visibleCards = applyOn(cardItems);
-      const totalVisible = (tableItems.length ? visibleTable : 0) + (cardItems.length ? visibleCards : 0);
+      if (totalVisible === 0) {
+        paginationInfo.textContent = '0 élément';
+        return;
+      }
 
+      const perPage = parseInt(currentPerPage, 10) || 10;
+      const start = ((currentPage - 1) * perPage) + 1;
+      const end = Math.min(currentPage * perPage, totalVisible);
+
+      paginationInfo.textContent = start + ' à ' + end + ' sur ' + totalVisible + ' élément' + (totalVisible > 1 ? 's' : '');
+    }
+
+    function createPaginationButton(label, page, disabled, active, ariaLabel) {
+      const li = document.createElement('li');
+      li.className = 'page-item';
+
+      if (disabled) {
+        li.classList.add('disabled');
+      }
+
+      if (active) {
+        li.classList.add('active');
+      }
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'page-link';
+      btn.textContent = label;
+      btn.dataset.page = String(page);
+
+      if (ariaLabel) {
+        btn.setAttribute('aria-label', ariaLabel);
+      }
+
+      if (active) {
+        btn.setAttribute('aria-current', 'page');
+      }
+
+      if (disabled) {
+        btn.disabled = true;
+        btn.setAttribute('aria-disabled', 'true');
+      }
+
+      li.appendChild(btn);
+
+      return li;
+    }
+
+    function renderPagination(totalVisible) {
+      if (!paginationList) return;
+
+      paginationList.innerHTML = '';
+
+      currentPage = parseInt(currentPage, 10) || 1;
+
+      if (!paginationEnabled || currentPerPage === 'ALL') {
+        updatePaginationInfo(totalVisible);
+        return;
+      }
+
+      const perPage = parseInt(currentPerPage, 10) || 10;
+      const totalPages = Math.max(1, Math.ceil(totalVisible / perPage));
+
+      if (currentPage > totalPages) {
+        currentPage = totalPages;
+      }
+
+      if (currentPage < 1) {
+        currentPage = 1;
+      }
+
+      paginationList.appendChild(
+        createPaginationButton(
+          '‹',
+          currentPage - 1,
+          currentPage <= 1,
+          false,
+          'Page précédente'
+        )
+      );
+
+      const maxButtons = 7;
+      let startPage = Math.max(1, currentPage - 3);
+      let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+      if ((endPage - startPage + 1) < maxButtons) {
+        startPage = Math.max(1, endPage - maxButtons + 1);
+      }
+
+      if (startPage > 1) {
+        paginationList.appendChild(
+          createPaginationButton('1', 1, false, currentPage === 1)
+        );
+
+        if (startPage > 2) {
+          const ellipsis = document.createElement('li');
+          ellipsis.className = 'page-item disabled';
+          ellipsis.innerHTML = '<span class="page-link">…</span>';
+          paginationList.appendChild(ellipsis);
+        }
+      }
+
+      for (let page = startPage; page <= endPage; page++) {
+        paginationList.appendChild(
+          createPaginationButton(
+            String(page),
+            page,
+            false,
+            currentPage === page
+          )
+        );
+      }
+
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          const ellipsis = document.createElement('li');
+          ellipsis.className = 'page-item disabled';
+          ellipsis.innerHTML = '<span class="page-link">…</span>';
+          paginationList.appendChild(ellipsis);
+        }
+
+        paginationList.appendChild(
+          createPaginationButton(
+            String(totalPages),
+            totalPages,
+            false,
+            currentPage === totalPages
+          )
+        );
+      }
+
+      paginationList.appendChild(
+        createPaginationButton(
+          '›',
+          currentPage + 1,
+          currentPage >= totalPages,
+          false,
+          'Page suivante'
+        )
+      );
+
+      updatePaginationInfo(totalVisible);
+    }
+
+    function applyPagination(list, visibleList) {
+      const visibleSet = new Set(visibleList);
+
+      if (!paginationEnabled || currentPerPage === 'ALL') {
+        list.forEach(el => {
+          el.classList.toggle('d-none', !visibleSet.has(el));
+        });
+
+        return;
+      }
+
+      const perPage = parseInt(currentPerPage, 10) || 10;
+      const totalPages = Math.max(1, Math.ceil(visibleList.length / perPage));
+
+      currentPage = parseInt(currentPage, 10) || 1;
+
+      if (currentPage > totalPages) {
+        currentPage = totalPages;
+      }
+
+      if (currentPage < 1) {
+        currentPage = 1;
+      }
+
+      const start = (currentPage - 1) * perPage;
+      const end = start + perPage;
+      const paginatedSet = new Set(visibleList.slice(start, end));
+
+      list.forEach(el => {
+        el.classList.toggle('d-none', !paginatedSet.has(el));
+      });
+    }
+
+    function applyFilterAndSearch(filter, resetPage) {
+      currentFilter = filter || defaultFilter;
+
+      if (resetPage !== false) {
+        currentPage = 1;
+      }
+
+      const { tableItems, cardItems } = getAllItems();
+
+      const visibleTableItems = getFilteredItems(tableItems);
+      const visibleCardItems = getFilteredItems(cardItems);
+
+      applyPagination(tableItems, visibleTableItems);
+      applyPagination(cardItems, visibleCardItems);
+
+      const totalVisible = (tableItems.length ? visibleTableItems.length : 0)
+        + (cardItems.length ? visibleCardItems.length : 0);
+
+      const emptyState = resolveEmptyState();
       if (emptyState) {
         emptyState.classList.toggle('d-none', totalVisible !== 0);
       }
 
-      updateFilterLabel(filter);
+      updateFilterLabel(currentFilter);
+      renderPagination(totalVisible);
     }
 
     function parseValue(el, key, type) {
       const v = el.getAttribute('data-sort-' + key) ?? el.getAttribute('data-' + key) ?? '';
+
       if (type === 'number') {
         const n = parseFloat((v || '').toString().replace(',', '.'));
         return isNaN(n) ? 0 : n;
       }
+
       if (type === 'date') {
         const d = new Date(v);
         const t = d.getTime();
         return isNaN(t) ? 0 : t;
       }
+
       return normalize(v);
     }
 
     function sortList(list, key, dir, type) {
       const mult = (dir === 'desc') ? -1 : 1;
+
       return list.slice().sort((a, b) => {
         const va = parseValue(a, key, type);
         const vb = parseValue(b, key, type);
+
         if (va < vb) return -1 * mult;
-        if (va > vb) return  1 * mult;
+        if (va > vb) return 1 * mult;
+
         return 0;
       });
     }
@@ -253,7 +549,10 @@
       }
 
       if (cardItems.length) {
-        const container = config.cardsContainer ? document.querySelector(config.cardsContainer) : cardItems[0].parentElement;
+        const container = config.cardsContainer
+          ? document.querySelector(config.cardsContainer)
+          : cardItems[0].parentElement;
+
         if (container) {
           const sorted = sortList(cardItems, key, dir, type);
           sorted.forEach(card => container.appendChild(card));
@@ -266,60 +565,256 @@
         th.classList.remove('text-decoration-underline');
         th.removeAttribute('aria-sort');
       });
+
       if (activeTh) {
         activeTh.classList.add('text-decoration-underline');
         activeTh.setAttribute('aria-sort', currentSortDir === 'asc' ? 'ascending' : 'descending');
       }
     }
 
-    document.querySelectorAll(filterButtonsSelector).forEach(btn => {
+    function saveState() {
+      const tableWrap = resolveTableWrap();
+
+      const state = {
+        search: searchInput ? searchInput.value : '',
+        filter: currentFilter || getActiveFilter() || defaultFilter,
+        sortKey: currentSortKey,
+        sortDir: currentSortDir,
+        page: ajaxMode ? 1 : currentPage,
+        perPage: currentPerPage,
+        scrollY: window.scrollY,
+        tableScrollLeft: tableWrap ? tableWrap.scrollLeft : 0,
+      };
+
+      sessionStorage.setItem(storageKey, JSON.stringify(state));
+    }
+
+    function restoreState() {
+      if (ajaxMode) {
+        sessionStorage.removeItem(storageKey);
+        return false;
+      }
+
+      const raw = sessionStorage.getItem(storageKey);
+      if (!raw) {
+        return false;
+      }
+
+      try {
+        const state = JSON.parse(raw);
+
+        if (searchInput && typeof state.search === 'string') {
+          searchInput.value = state.search;
+        }
+
+        currentFilter = state.filter || defaultFilter;
+        currentSortKey = state.sortKey || currentSortKey;
+        currentSortDir = state.sortDir || currentSortDir;
+        currentPage = parseInt(state.page, 10) || 1;
+        currentPerPage = state.perPage || defaultPerPage;
+
+        if (perPageSelect) {
+          perPageSelect.value = currentPerPage;
+        }
+
+        computeCounts();
+        setActiveButton(currentFilter);
+
+        if (currentSortKey) {
+          const th = Array.from(document.querySelectorAll(sortHeadersSelector))
+            .find(x => x.getAttribute('data-sort-key') === currentSortKey);
+
+          applySort(
+            currentSortKey,
+            currentSortDir,
+            th ? (th.getAttribute('data-sort-type') || 'text') : 'text'
+          );
+
+          setSortIndicators(th || null);
+        }
+
+        applyFilterAndSearch(currentFilter, false);
+
+        requestAnimationFrame(() => {
+          const tableWrap = resolveTableWrap();
+
+          window.scrollTo({ top: state.scrollY || 0, behavior: 'auto' });
+
+          if (tableWrap && typeof state.tableScrollLeft === 'number') {
+            tableWrap.scrollLeft = state.tableScrollLeft;
+          }
+        });
+
+        return true;
+      } catch (e) {
+        sessionStorage.removeItem(storageKey);
+
+        return false;
+      }
+    }
+
+    function refreshAfterAjax(resetPage) {
+      if (resetPage !== false) {
+        currentPage = 1;
+      }
+
+      computeCounts();
+      setActiveButton(currentFilter || defaultFilter);
+
+      if (currentSortKey) {
+        const th = Array.from(document.querySelectorAll(sortHeadersSelector))
+          .find(x => x.getAttribute('data-sort-key') === currentSortKey);
+
+        applySort(
+          currentSortKey,
+          currentSortDir,
+          th ? (th.getAttribute('data-sort-type') || 'text') : 'text'
+        );
+
+        setSortIndicators(th || null);
+      }
+
+      applyFilterAndSearch(currentFilter || defaultFilter, false);
+    }
+
+    root.querySelectorAll(filterButtonsSelector).forEach(btn => {
       btn.addEventListener('click', () => {
-        const filter = btn.getAttribute('data-filter') || 'ALL';
+        const filter = btn.getAttribute('data-filter') || defaultFilter;
+
         setActiveButton(filter);
-        applyFilterAndSearch(filter);
+        applyFilterAndSearch(filter, true);
+        saveState();
       });
     });
 
     if (searchInput) {
       searchInput.addEventListener('input', () => {
-        const active = (document.querySelector(filterButtonsSelector + '.active') || {})?.getAttribute?.('data-filter') || defaultFilter;
-        applyFilterAndSearch(active);
+        applyFilterAndSearch(currentFilter || defaultFilter, true);
+        saveState();
+      });
+    }
+
+    if (perPageSelect) {
+      perPageSelect.value = currentPerPage;
+
+      perPageSelect.addEventListener('change', () => {
+        currentPerPage = perPageSelect.value;
+        currentPage = 1;
+
+        applyFilterAndSearch(currentFilter || defaultFilter, true);
+        saveState();
       });
     }
 
     document.querySelectorAll(sortHeadersSelector).forEach(th => {
       th.style.cursor = 'pointer';
+
       th.addEventListener('click', () => {
         const key = th.getAttribute('data-sort-key');
         if (!key) return;
 
         const type = th.getAttribute('data-sort-type') || 'text';
 
-        if (currentSortKey === key) currentSortDir = (currentSortDir === 'asc') ? 'desc' : 'asc';
-        else { currentSortKey = key; currentSortDir = 'asc'; }
+        if (currentSortKey === key) {
+          currentSortDir = (currentSortDir === 'asc') ? 'desc' : 'asc';
+        } else {
+          currentSortKey = key;
+          currentSortDir = 'asc';
+        }
+
+        currentPage = 1;
 
         applySort(currentSortKey, currentSortDir, type);
         setSortIndicators(th);
-
-        const active = (document.querySelector(filterButtonsSelector + '.active') || {})?.getAttribute?.('data-filter') || defaultFilter;
-        applyFilterAndSearch(active);
+        applyFilterAndSearch(currentFilter || defaultFilter, true);
+        saveState();
       });
     });
 
-    // init (maintenant que le DOM est prêt)
-    computeCounts();
-    setActiveButton(defaultFilter);
-    applyFilterAndSearch(defaultFilter);
+    if (paginationList) {
+      paginationList.addEventListener('click', (event) => {
+        const btn = event.target instanceof Element
+          ? event.target.closest('.page-link[data-page]')
+          : null;
 
-    if (currentSortKey) {
-      const th = Array.from(document.querySelectorAll(sortHeadersSelector))
-        .find(x => x.getAttribute('data-sort-key') === currentSortKey);
-      applySort(currentSortKey, currentSortDir, th ? (th.getAttribute('data-sort-type') || 'text') : 'text');
-      setSortIndicators(th || null);
+        if (!btn || btn.disabled) {
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const page = parseInt(btn.dataset.page || '', 10);
+
+        if (Number.isNaN(page)) {
+          return;
+        }
+
+        currentPage = page;
+
+        applyFilterAndSearch(currentFilter || defaultFilter, false);
+        saveState();
+
+        const tableWrap = resolveTableWrap();
+
+        if (scrollOnPageChange && tableWrap) {
+          tableWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
     }
+
+    document.addEventListener('list-tools:refresh', (event) => {
+      if (event.detail && event.detail.uid && event.detail.uid !== '{{ uid }}') {
+        return;
+      }
+
+      currentPage = 1;
+      sessionStorage.removeItem(storageKey);
+      refreshAfterAjax(true);
+    });
+
+    if (!restoreState()) {
+      if (perPageSelect) {
+        perPageSelect.value = currentPerPage;
+      }
+
+      computeCounts();
+      setActiveButton(defaultFilter);
+
+      if (currentSortKey) {
+        const th = Array.from(document.querySelectorAll(sortHeadersSelector))
+          .find(x => x.getAttribute('data-sort-key') === currentSortKey);
+
+        applySort(
+          currentSortKey,
+          currentSortDir,
+          th ? (th.getAttribute('data-sort-type') || 'text') : 'text'
+        );
+
+        setSortIndicators(th || null);
+      }
+
+      applyFilterAndSearch(defaultFilter, true);
+    }
+
+    document.addEventListener('submit', (event) => {
+      const form = event.target;
+      if (!(form instanceof HTMLFormElement)) return;
+
+      saveState();
+    }, true);
+
+    document.addEventListener('click', (event) => {
+      const target = event.target instanceof Element ? event.target.closest('[data-bs-target]') : null;
+      if (!target) return;
+
+      saveState();
+    }, true);
+
+    window.addEventListener('pagehide', saveState);
+    window.addEventListener('beforeunload', saveState);
   }
 
-  // IMPORTANT: attendre que le tableau/cards soient dans le DOM
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initListTools);
   } else {

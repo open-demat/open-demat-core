@@ -1,14 +1,17 @@
+# Installation - Open Demat
 
-# Installation – Process Symfony Stack
-
-Ce document décrit l’installation complète de l’environnement serveur pour le projet **Process Symfony** :
+Ce document décrit l'installation de l'environnement serveur, puis le démarrage
+initial d'une instance **Open Demat** :
 
 - Apache 2
 - PHP 8.5 (via Sury)
 - PostgreSQL 17
 - Composer
-- MinIO
 - Utilisateur de déploiement
+- Instance Open Demat
+
+Pour l'installation d'un stockage S3 compatible Garage, voir
+`INSTALL_GARAGE.md`.
 
 Testé sur **Debian 12 (Bookworm)**.
 
@@ -20,7 +23,7 @@ Testé sur **Debian 12 (Bookworm)**.
 sudo apt update
 sudo apt install -y \
   curl wget git unzip ca-certificates lsb-release gnupg
-````
+```
 
 ---
 
@@ -91,21 +94,21 @@ sudo systemctl enable postgresql
 sudo systemctl start postgresql
 ```
 
-### Création de la base et de l’utilisateur
+### Création de la base et de l'utilisateur
 
 ```bash
 sudo -u postgres psql
 ```
 
 ```sql
-CREATE USER core_user WITH PASSWORD 'password';
-CREATE DATABASE process_db OWNER core_user;
+CREATE USER open_demat WITH PASSWORD 'change_me';
+CREATE DATABASE open_demat OWNER open_demat;
 \q
 ```
 
 ---
 
-## 5. Installation d’Apache 2
+## 5. Installation d'Apache 2
 
 ```bash
 sudo apt install -y apache2
@@ -125,7 +128,7 @@ sudo systemctl reload apache2
 
 ## 6. Utilisateur de déploiement
 
-### Création de l’utilisateur
+### Création de l'utilisateur
 
 ```bash
 sudo adduser deploy
@@ -135,112 +138,160 @@ sudo usermod -aG www-data deploy
 ### Permissions du projet
 
 ```bash
-sudo chown -R deploy:www-data /var/www/open-demat-core
-sudo chmod -R 2750 /var/www/open-demat-core
+sudo mkdir -p /var/www/open-demat
+sudo chown -R deploy:www-data /var/www/open-demat
+sudo chmod -R 2750 /var/www/open-demat
 ```
 
 ---
 
-## 7. Installation de MinIO
+## 7. Démarrage initial d'une instance
 
-### Création de l’utilisateur système
-
-```bash
-sudo useradd -r -s /sbin/nologin minio
-```
-
-### Arborescence
+### Cloner le dépôt
 
 ```bash
-sudo mkdir -p /srv/minio/data
-sudo mkdir -p /etc/minio
-sudo chown -R minio:minio /srv/minio
-sudo chown -R minio:minio /etc/minio
+cd /var/www
+git clone https://github.com/open-demat/open-demat-core.git open-demat
+cd open-demat
 ```
 
-### Installation du binaire
+### Préparer les fichiers locaux
 
 ```bash
-sudo curl -Lo minio https://dl.min.io/server/minio/release/linux-amd64/minio
-sudo install minio /usr/local/bin/minio
+cp .env.example .env.local
+cp composer.open_demat.json.template composer.open_demat.json
 ```
 
-### Configuration MinIO
+Le fichier `.env.local` contient la configuration locale de l'application. Le
+fichier `composer.open_demat.json` contient les packages et bundles activés pour
+cette instance.
 
-```bash
-sudo nano /etc/minio/minio.env
-```
+### Renseigner les variables d'environnement essentielles
+
+Éditer `.env.local` :
 
 ```env
-MINIO_ROOT_USER=root
-MINIO_ROOT_PASSWORD=CHANGE_ME_STRONG_PASSWORD
+APP_ENV=dev
+APP_DEBUG=1
+APP_SECRET=change_me_please_123456
 
-MINIO_REGION=us-east-1
-MINIO_SERVER_URL=http://localhost:9000
+ADMIN_URL="http://localhost:8000"
+ORGANIZATION_NAME="Open Demat"
+
+DATABASE_URL="postgresql://open_demat:change_me@127.0.0.1:5432/open_demat?serverVersion=17&charset=utf8"
+
+MAILER_DSN="null://null"
+MAILER_FROM="noreply@open-demat.example.org"
 ```
 
-### Service systemd
+En production :
+
+- mettre `APP_ENV=prod` et `APP_DEBUG=0` ;
+- générer un vrai `APP_SECRET` ;
+- utiliser des mots de passe forts ;
+- ne jamais versionner `.env.local`.
+
+### Déclarer les packages et bundles locaux
+
+Exemple de `composer.open_demat.json` :
+
+```json
+{
+  "require": {
+    "open-demat/admin-bundle": "dev-main"
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/open-demat/admin-bundle.git"
+    }
+  ]
+}
+```
+
+Les bundles Symfony activés localement sont déclarés dans
+`config/bundles.local.php`. Exemple :
+
+```php
+<?php
+
+return [
+    OpenDemat\AdminBundle\OpenDematAdminBundle::class => ['all' => true],
+];
+```
+
+### Générer Composer et installer les dépendances
 
 ```bash
-sudo nano /etc/systemd/system/minio.service
+bash bin/composer-build
+composer install
 ```
 
-```ini
-[Unit]
-Description=MinIO
-After=network-online.target
-Wants=network-online.target
+Le `composer.json` généré ne doit pas être modifié à la main. Modifier
+`composer.core.json` pour le socle commun, et `composer.open_demat.json` pour
+les packages propres à l'instance.
 
-[Service]
-User=minio
-Group=minio
-EnvironmentFile=/etc/minio/minio.env
-ExecStart=/usr/local/bin/minio server /srv/minio/data --address :9000 --console-address :9001
-Restart=always
-LimitNOFILE=65536
-
-[Install]
-WantedBy=multi-user.target
-```
-
-### Activation
+### Initialiser la base
 
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable minio
-sudo systemctl start minio
+php bin/console doctrine:database:create --if-not-exists
+php bin/console doctrine:schema:create
 ```
+
+Si le projet ou les bundles fournissent des migrations, utiliser plutôt :
+
+```bash
+php bin/console doctrine:migrations:migrate
+```
+
+### Lancer l'instance en local
+
+```bash
+php -S 127.0.0.1:8000 -t public
+```
+
+Ouvrir ensuite l'URL configurée dans `ADMIN_URL`, par exemple
+`http://localhost:8000`.
 
 ---
 
-## 8. Client MinIO (mc)
+## 8. Installer un package
+
+Pour installer un package Composer :
 
 ```bash
-sudo curl -Lo mc https://dl.min.io/client/mc/release/linux-amd64/mc
-sudo install mc /usr/local/bin/mc
+composer require vendor/package
 ```
 
-### Configuration de l’alias
-
-```bash
-mc alias set local http://localhost:9000 root 'CHANGE_ME_STRONG_PASSWORD'
-```
+Pour installer un bundle Open Demat, déclarer aussi son activation Symfony dans
+`config/bundles.local.php` si le bundle ne le fait pas automatiquement.
 
 ---
 
-## 9. Ports utilisés
+## 9. Mettre à jour les dépôts
+
+Pour récupérer les dernières versions des différents dépôts :
+
+```bash
+./update.sh
+```
+
+Le script fait un `git pull --ff-only`, régénère `composer.json` avec
+`bin/composer-build`, puis lance `composer update`.
+
+---
+
+## 10. Ports utilisés
 
 | Service    | Port     |
 | ---------- | -------- |
 | Apache     | 80 / 443 |
 | PHP-FPM    | socket   |
 | PostgreSQL | 5432     |
-| MinIO API  | 9000     |
-| MinIO UI   | 9001     |
 
 ---
 
-## 10. Vérifications rapides
+## 11. Vérifications rapides
 
 ```bash
 php -v
@@ -249,6 +300,7 @@ psql --version
 systemctl status apache2
 systemctl status php8.5-fpm
 systemctl status postgresql
-systemctl status minio
+php bin/console lint:container
+php bin/console debug:router
 ```
 
