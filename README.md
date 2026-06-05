@@ -232,8 +232,10 @@ bash bin/composer-build
 
 Ce script :
 
-1. Génère `composer.json`
-2. Lance `composer update`
+1. Récupère les derniers changements Git
+2. Génère `composer.json`
+3. Lance `composer update`
+4. Vide le cache Symfony avec l'utilisateur `www-data`
 
 ---
 

@@ -180,6 +180,7 @@ DATABASE_URL="postgresql://open_demat:change_me@127.0.0.1:5432/open_demat?server
 
 MAILER_DSN="smtp://localhost:1025"
 MAILER_FROM="noreply@open-demat.example.org"
+MESSENGER_TRANSPORT_DSN=doctrine://default?queue_name=open_demat_async
 ```
 
 En production :
@@ -249,11 +250,12 @@ Puis lance :
 ./update.sh
 ```
 
-Le script `update.sh` fait trois choses :
+Le script `update.sh` fait quatre choses :
 
 1. récupère les derniers changements Git avec `git pull --ff-only` ;
 2. régénère `composer.json` avec `bin/composer-build` ;
-3. lance `composer update`.
+3. lance `composer update` ;
+4. vide le cache Symfony avec l'utilisateur `www-data`.
 
 Si tu ne veux pas faire de `git pull`, lance seulement :
 
