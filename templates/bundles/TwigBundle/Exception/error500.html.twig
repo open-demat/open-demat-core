@@ -5,6 +5,11 @@
 {% endblock %}
 
 {% block body %}
+{% set portalUrl = admin_url is defined and admin_url
+    ? (admin_url starts with 'http' ? admin_url : 'http://' ~ admin_url)
+    : '/'
+%}
+
 <div class="container py-5 text-center">
 
   <h1 class="display-3 text-danger fw-bold">
@@ -22,8 +27,8 @@
 
   <div class="mt-4 d-flex justify-content-center gap-3">
 
-    <a href="{{ path('app_home') }}" class="btn btn-danger">
-      Retour à l’accueil
+    <a href="{{ portalUrl }}" class="btn btn-danger">
+      Retour au portail
     </a>
 
     <a href="javascript:location.reload()" class="btn btn-outline-secondary">

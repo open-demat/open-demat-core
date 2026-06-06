@@ -7,6 +7,7 @@ initial d'une instance **Open Demat** :
 - PHP 8.5 (via Sury)
 - PostgreSQL 17
 - Composer
+- Supervisor
 - Utilisateur de déploiement
 - Instance Open Demat
 
@@ -22,7 +23,7 @@ Testé sur **Debian 12 (Bookworm)**.
 ```bash
 sudo apt update
 sudo apt install -y \
-  curl wget git unzip ca-certificates lsb-release gnupg
+  curl wget git unzip ca-certificates lsb-release gnupg supervisor
 ```
 
 ---
@@ -141,6 +142,44 @@ sudo usermod -aG www-data deploy
 sudo mkdir -p /var/www/open-demat
 sudo chown -R deploy:www-data /var/www/open-demat
 sudo chmod -R 2750 /var/www/open-demat
+sudo chmod -R 2770 /var/www/open-demat/var
+```
+
+Le code applicatif appartient à `deploy:www-data`. Le bit `2` sur les
+répertoires conserve le groupe `www-data` pour les fichiers créés ensuite.
+Le répertoire `var/` doit rester inscriptible par PHP-FPM et les commandes
+Symfony exécutées sous `www-data`.
+
+Après le clone initial, appliquer ou réappliquer les droits suivants :
+
+```bash
+sudo chown -R deploy:www-data /var/www/open-demat
+sudo find /var/www/open-demat -type d -exec chmod 2750 {} \;
+sudo find /var/www/open-demat -type f -exec chmod 0640 {} \;
+sudo chmod -R 2770 /var/www/open-demat/var
+```
+
+### Autoriser le clear cache en www-data
+
+Le script `update.sh` lance `cache:clear` avec l'utilisateur `www-data` pour
+éviter de créer un cache Symfony appartenant à `deploy`.
+
+Éditer sudoers avec `visudo` :
+
+```bash
+sudo visudo -f /etc/sudoers.d/open-demat-deploy
+```
+
+Ajouter la règle suivante, en adaptant le chemin de PHP si nécessaire :
+
+```sudoers
+deploy ALL=(www-data) NOPASSWD: /usr/bin/php /var/www/open-demat/bin/console cache:clear *
+```
+
+Vérifier ensuite :
+
+```bash
+sudo -u deploy sudo -n -u www-data /usr/bin/php /var/www/open-demat/bin/console cache:clear --env=prod
 ```
 
 ---
@@ -182,6 +221,7 @@ DATABASE_URL="postgresql://open_demat:change_me@127.0.0.1:5432/open_demat?server
 
 MAILER_DSN="null://null"
 MAILER_FROM="noreply@open-demat.example.org"
+MESSENGER_TRANSPORT_DSN=doctrine://default?queue_name=open_demat_async
 ```
 
 En production :
@@ -277,11 +317,50 @@ Pour récupérer les dernières versions des différents dépôts :
 ```
 
 Le script fait un `git pull --ff-only`, régénère `composer.json` avec
-`bin/composer-build`, puis lance `composer update`.
+`bin/composer-build`, lance `composer update`, puis vide le cache Symfony avec
+`www-data`.
 
 ---
 
-## 10. Ports utilisés
+## 10. Worker mail avec Supervisor
+
+Les emails Open Demat sont envoyés via Symfony Messenger. Les messages mail sont
+déposés dans la file Doctrine définie par `MESSENGER_TRANSPORT_DSN`, puis
+traités par le transport Messenger `async` :
+
+```bash
+php bin/console messenger:consume async
+```
+
+En production, installer ce worker avec Supervisor :
+
+```bash
+sudo cp docs/supervisor-open-demat-mailer.conf /etc/supervisor/conf.d/open-demat-mailer.conf
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl status open-demat-mailer:*
+```
+
+Commandes utiles :
+
+```bash
+sudo supervisorctl restart open-demat-mailer:*
+sudo supervisorctl tail -f open-demat-mailer:*
+```
+
+La configuration fournie suppose :
+
+- projet dans `/var/www/open-demat` ;
+- utilisateur système `deploy` ;
+- environnement `prod` ;
+- logs dans `/var/log/supervisor/open-demat-mailer.log`.
+
+Adapter `docs/supervisor-open-demat-mailer.conf` si le chemin, l'utilisateur ou
+l'environnement diffère.
+
+---
+
+## 11. Ports utilisés
 
 | Service    | Port     |
 | ---------- | -------- |
@@ -291,16 +370,17 @@ Le script fait un `git pull --ff-only`, régénère `composer.json` avec
 
 ---
 
-## 11. Vérifications rapides
+## 12. Vérifications rapides
 
 ```bash
 php -v
 composer --version
 psql --version
+systemctl status supervisor
+supervisorctl status
 systemctl status apache2
 systemctl status php8.5-fpm
 systemctl status postgresql
 php bin/console lint:container
 php bin/console debug:router
 ```
-

@@ -1,7 +1,7 @@
 framework:
   messenger:
     transports:
-      async: 'doctrine://default?queue_name=async'
+      async: '%env(MESSENGER_TRANSPORT_DSN)%'
 
     routing:
       Symfony\Component\Mailer\Messenger\SendEmailMessage: async

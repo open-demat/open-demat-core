@@ -3,6 +3,11 @@
 {% block title %}Page non trouvée{% endblock %}
 
 {% block body %}
+{% set portalUrl = admin_url is defined and admin_url
+    ? (admin_url starts with 'http' ? admin_url : 'http://' ~ admin_url)
+    : '/'
+%}
+
 <div class="container py-5 text-center">
     <h1 class="display-4 text-danger">404</h1>
     <h2 class="mb-3">Page non trouvée</h2>
@@ -11,8 +16,8 @@
         La page que vous cherchez n’existe pas ou a été déplacée.
     </p>
 
-    <a href="{{ path('app_home') }}" class="btn btn-primary mt-3">
-        Retour à l’accueil
+    <a href="{{ portalUrl }}" class="btn btn-primary mt-3">
+        Retour au portail
     </a>
 </div>
 {% endblock %}
