@@ -6,3 +6,4 @@ framework:
     routing:
       Symfony\Component\Mailer\Messenger\SendEmailMessage: async
       OpenDemat\Core\Mailer\Message\TemplatedMailMessage: async
+      OpenDemat\Core\EsupSignature\Messenger\Message\ProcessBpmSignalMessage: async

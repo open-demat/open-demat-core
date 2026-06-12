@@ -13,7 +13,7 @@
  *
  * Le repository fournit aussi des méthodes utilitaires permettant :
  * - de récupérer les utilisateurs associés à un processus métier
- *   à partir des rôles applicatifs (ex : ROLE_CSST_*, ROLE_COURRIERS_*)
+ *   à partir des rôles applicatifs (ex : ROLE_EXAMPLE_*, ROLE_FINANCE_*)
  * - d’identifier les rôles spécifiques d’un utilisateur pour
  *   un processus donné
  *
@@ -58,8 +58,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
      * Retourne les utilisateurs ayant au moins un rôle du process demandé.
      *
      * Exemple :
-     *  - CSST       => rôles commençant par ROLE_CSST_
-     *  - COURRIERS  => rôles commençant par ROLE_COURRIERS_
+     *  - EXAMPLE => rôles commençant par ROLE_EXAMPLE_
+     *  - FINANCE => rôles commençant par ROLE_FINANCE_
      */
     public function findByProcessName(string $processName, bool $excludePowerUser = true): array
     {

@@ -23,15 +23,19 @@ namespace OpenDemat\Core\Twig;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 use OpenDemat\Core\Hub\HubRegistry;
+use OpenDemat\Core\Role\RoleRegistry;
 
 class HubExtension extends AbstractExtension implements GlobalsInterface
 {
-    public function __construct(private HubRegistry $registry)
-    {
-    }
+    public function __construct(
+        private HubRegistry $registry,
+        private RoleRegistry $roleRegistry,
+    ) {}
 
     public function getGlobals(): array
     {
+        $this->roleRegistry->all();
+
         return [
             'app_hub_apps' => $this->registry->all(),
         ];

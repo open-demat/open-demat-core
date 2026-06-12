@@ -20,3 +20,10 @@ doctrine:
         dir: '%kernel.project_dir%/src/Entity'
         prefix: 'OpenDemat\Core\Entity'
         alias: OpenDematCore
+
+      OpenDematCoreEsupSignature:
+        is_bundle: false
+        type: attribute
+        dir: '%kernel.project_dir%/src/EsupSignature/Entity'
+        prefix: 'OpenDemat\Core\EsupSignature\Entity'
+        alias: EsupSignature

@@ -49,6 +49,7 @@ security:
     - { path: ^/llogout, roles: PUBLIC_ACCESS }
 
     - { path: ^/profile, roles: ROLE_USER }
+    - { attributes: { '_route': '^open_demat_ldap_personnel_search$' }, roles: ROLE_USER }
 
     # Admin Open Demat
     - { attributes: { '_route': '^open_demat_admin_' }, roles: ROLE_ADMIN }
@@ -57,22 +58,3 @@ security:
     # Example bundle
     - { attributes: { '_route': '^open_demat_example_admin_' }, roles: ROLE_ADMIN }
     - { attributes: { '_route': '^open_demat_example_' }, roles: ROLE_USER }
-
-    # CSST - règles spécifiques avant les règles globales
-    - { attributes: { '_route': '^csst_admin_' }, roles: ROLE_CSST_POWERUSER }
-
-    # Création d'une observation accessible à tous les utilisateurs connectés
-    - { attributes: { '_route': '^csst_observation_new$' }, roles: ROLE_USER }
-
-    # Toutes les autres routes observation restent réservées aux rôles CSST
-    - { attributes: { '_route': '^csst_observation_' }, roles: [ROLE_CSST_SHS, ROLE_CSST_AP, ROLE_CSST_F3SCT] }
-
-    # CSST global
-    - { attributes: { '_route': '^csst_' }, roles: ROLE_USER }
-
-    # Courriers
-    - { attributes: { '_route': '^courriers_' }, roles: ROLE_COURRIERS_OPERATEUR }
-
-    # Véhicules
-    - { attributes: { '_route': '^vehicules_admin_' }, roles: ROLE_VEHICULES_POWERUSER }
-    - { attributes: { '_route': '^vehicules_' }, roles: ROLE_USER }

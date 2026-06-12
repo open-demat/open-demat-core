@@ -13,6 +13,10 @@ core_controllers:
   resource: '../src/Controller/'
   type: attribute
 
+esup_signature_controllers:
+  resource: '../src/EsupSignature/Controller/'
+  type: attribute
+
 # config/routes.yaml
 per_bundles_auto:
   resource: .

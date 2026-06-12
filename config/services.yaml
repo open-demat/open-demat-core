@@ -1,5 +1,10 @@
 # config/services.yaml
 parameters:
+  esup_signature_timeout_default: 30
+  esup_signature.url: '%env(default::ESUP_SIGNATURE_URL)%'
+  esup_signature.api_key: '%env(default::ESUP_SIGNATURE_API_KEY)%'
+  esup_signature.timeout: '%env(default:esup_signature_timeout_default:int:ESUP_SIGNATURE_TIMEOUT)%'
+  esup_signature.schema_dir: '%kernel.project_dir%/var/esup-schema'
   organization_logo_default: 'assets/img/open-demat-logo.png'
   s3.bucket: '%env(S3_BUCKET)%'
 
@@ -27,6 +32,15 @@ parameters:
   ldap_first_name_attribute: '%env(string:LDAP_FIRST_NAME_ATTRIBUTE)%'
   ldap_last_name_attribute: '%env(string:LDAP_LAST_NAME_ATTRIBUTE)%'
   ldap_auto_create_user: '%env(bool:LDAP_AUTO_CREATE_USER)%'
+  ldap_personnel_enabled: '%env(bool:LDAP_PERSONNEL_ENABLED)%'
+  ldap_personnel_host: '%env(string:LDAP_PERSONNEL_HOST)%'
+  ldap_personnel_port: '%env(int:LDAP_PERSONNEL_PORT)%'
+  ldap_personnel_base_dn: '%env(string:LDAP_PERSONNEL_BASE_DN)%'
+  ldap_personnel_use_tls: '%env(bool:LDAP_PERSONNEL_USE_TLS)%'
+  ldap_personnel_bind_dn: '%env(default::LDAP_PERSONNEL_BIND_DN)%'
+  ldap_personnel_bind_password: '%env(default::LDAP_PERSONNEL_BIND_PASSWORD)%'
+  ldap_personnel_timeout: '%env(int:LDAP_PERSONNEL_TIMEOUT)%'
+  ldap_personnel_max_results: '%env(int:LDAP_PERSONNEL_MAX_RESULTS)%'
   saml2_enabled: '%env(bool:SAML2_ENABLED)%'
   saml2_identifier_attribute: '%env(string:SAML2_IDENTIFIER_ATTRIBUTE)%'
   saml2_email_attribute: '%env(string:SAML2_EMAIL_ATTRIBUTE)%'
@@ -54,6 +68,12 @@ services:
       - '../src/DependencyInjection/'
       - '../src/Entity/'
       - '../src/Kernel.php'
+      - '../src/EsupSignature/DTO/'
+      - '../src/EsupSignature/Entity/'
+      - '../src/EsupSignature/Event/'
+      - '../src/EsupSignature/Exception/'
+      - '../src/EsupSignature/ApiCompat/'
+      - '../src/EsupSignature/Messenger/Message/'
 
   OpenDemat\Core\Routing\PerBundleAttributeLoader:
       arguments:
@@ -82,6 +102,18 @@ services:
           $firstNameAttribute: '%ldap_first_name_attribute%'
           $lastNameAttribute: '%ldap_last_name_attribute%'
           $autoCreateUser: '%ldap_auto_create_user%'
+
+  OpenDemat\Core\Directory\LdapPersonnelDirectory:
+      arguments:
+          $enabled: '%ldap_personnel_enabled%'
+          $host: '%ldap_personnel_host%'
+          $port: '%ldap_personnel_port%'
+          $baseDn: '%ldap_personnel_base_dn%'
+          $useTls: '%ldap_personnel_use_tls%'
+          $bindDn: '%ldap_personnel_bind_dn%'
+          $bindPassword: '%ldap_personnel_bind_password%'
+          $timeout: '%ldap_personnel_timeout%'
+          $maxResults: '%ldap_personnel_max_results%'
 
   OpenDemat\Core\Security\Saml2AuthFactory:
       arguments:
@@ -258,3 +290,25 @@ services:
   OpenDemat\Core\EventSubscriber\WorkflowAuditSubscriber:
       tags:
           - { name: kernel.event_subscriber }
+
+  OpenDemat\Core\Role\RoleSynchronizer:
+      arguments:
+          $roleHierarchy: '%security.role_hierarchy.roles%'
+
+  OpenDemat\Core\EsupSignature\Service\EsupSignatureApiClient:
+      arguments:
+          $baseUrl: '%esup_signature.url%'
+          $apiKey: '%esup_signature.api_key%'
+          $timeout: '%esup_signature.timeout%'
+
+  OpenDemat\Core\EsupSignature\Schema\EsupSchemaCatalog:
+      arguments:
+          $schemaDir: '%esup_signature.schema_dir%'
+
+  OpenDemat\Core\EsupSignature\Security\BpmSignalSecretRegistry:
+      arguments:
+          $providers: !tagged_iterator open_demat.bpm_signal_provider
+
+  OpenDemat\Core\EsupSignature\Controller\BpmSignalController:
+      public: true
+      tags: ['controller.service_arguments']
