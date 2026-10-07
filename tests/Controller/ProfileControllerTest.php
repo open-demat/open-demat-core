@@ -12,7 +12,7 @@ final class ProfileControllerTest extends WebTestCase
         $client = static::createClient();
         $client->request('GET', '/profile/me/ajax');
 
-        $this->assertResponseRedirects('/cas/login', 302);
+        $this->assertResponseRedirects('/login?_target_path=/profile/me/ajax', 302);
     }
 
     public function test_ajax_me_returns_user_and_documents_when_authenticated(): void

@@ -87,12 +87,37 @@ class TaskRepository extends ServiceEntityRepository
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
+    /**
+     * Vérifie si une tâche précise est encore ouverte pour un dossier.
+     */
+    public function hasOpenTaskForCaseAndTaskName(
+        string $caseType,
+        int $caseId,
+        string $taskName
+    ): bool {
+        $count = $this->createQueryBuilder('t')
+            ->select('COUNT(t.id)')
+            ->where('t.completedAt IS NULL')
+            ->andWhere('t.caseType = :ctype')
+            ->andWhere('t.caseId = :cid')
+            ->andWhere('t.taskName = :name')
+            ->setParameter('ctype', $caseType)
+            ->setParameter('cid', $caseId)
+            ->setParameter('name', $taskName)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) $count > 0;
+    }
+
     public function completeOpenForCaseAndTaskNames(
-    string $caseType,
-    int $caseId,
-    array $taskNames
+        string $caseType,
+        int $caseId,
+        array $taskNames
     ): int {
-        if ($taskNames === []) return 0;
+        if ($taskNames === []) {
+            return 0;
+        }
 
         return $this->createQueryBuilder('t')
             ->update()

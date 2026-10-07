@@ -18,12 +18,139 @@
 {% set help = help|default('Formats : PDF, JPG, PNG, WEBP') %}
 {% set maxSizeMb = maxSizeMb|default(10) %}
 
+<style>
+  .filepicker{
+    border: 1px solid var(--open-demat-border, #e5e7eb);
+    border-radius: var(--open-demat-radius, 18px);
+    background: #fff;
+    box-shadow: 0 10px 22px rgba(0,0,0,.05);
+    padding: 1rem;
+  }
+
+  .filepicker .form-label{
+    font-weight: 700;
+    color: var(--open-demat-text, #1f2937);
+    margin-bottom: .25rem;
+  }
+
+  .filepicker .text-muted{
+    color: var(--open-demat-muted, #6b7280) !important;
+  }
+
+  .filepicker .btn{
+    border-radius: 12px;
+  }
+
+  .filepicker-dropzone{
+    border: 1px dashed color-mix(in srgb, var(--open-demat-border, #e5e7eb) 88%, #cbd5e1);
+    border-radius: 16px;
+    padding: 1.15rem 1rem;
+    text-align: center;
+    background: color-mix(in srgb, #f8fafc 75%, #fff);
+    transition: .12s ease-in-out;
+  }
+
+  .filepicker-dropzone:hover{
+    background: color-mix(in srgb, #f1f5f9 80%, #fff);
+  }
+
+  .filepicker-dropzone.is-dragover{
+    transform: scale(1.01);
+    border-color: var(--open-demat-red, #E42535) !important;
+    background: color-mix(in srgb, var(--open-demat-red, #E42535) 4%, #fff);
+  }
+
+  .filepicker-dropzone .fw-semibold{
+    color: var(--open-demat-text, #1f2937);
+  }
+
+  .filepicker [data-count]{
+    font-weight: 700;
+  }
+
+  .filepicker-preview{
+    width: 44px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,.08);
+    background: white;
+    flex: 0 0 auto;
+  }
+
+  .filepicker [data-list] .list-group-item{
+    border-radius: 14px !important;
+    border: 1px solid var(--open-demat-border, #e5e7eb);
+    margin-bottom: .5rem;
+    min-width: 0;
+    padding: .85rem .95rem;
+    box-shadow: none;
+  }
+
+  .filepicker [data-list] .list-group-item:last-child{
+    margin-bottom: 0;
+  }
+
+  .filepicker [data-list] .list-group-item > .d-flex.align-items-center{
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .filepicker [data-list] .list-group-item .fw-semibold{
+    color: var(--open-demat-text, #1f2937);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .filepicker [data-list] .list-group-item .text-muted{
+    font-size: .875rem;
+  }
+
+  .filepicker [data-empty]{
+    color: var(--open-demat-muted, #6b7280) !important;
+    font-size: .875rem;
+  }
+
+  @media (max-width: 540px){
+    .filepicker > .d-flex{
+      flex-wrap: wrap;
+    }
+
+    .filepicker > .d-flex > div:first-child{
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .filepicker > .d-flex > .d-flex.gap-2{
+      width: 100%;
+      justify-content: flex-end;
+    }
+
+    .filepicker [data-list] .list-group-item{
+      align-items: flex-start !important;
+      flex-direction: column;
+    }
+
+    .filepicker [data-list] .list-group-item > .d-flex.gap-2{
+      width: 100%;
+      justify-content: flex-end;
+      margin-top: .5rem;
+    }
+
+    .filepicker-preview{
+      width: 40px;
+      height: 40px;
+    }
+  }
+</style>
+
 <div class="mb-4 filepicker" data-filepicker data-input-id="{{ id }}" data-max="{{ max }}">
   <div class="d-flex justify-content-between align-items-start gap-3">
     <div>
       <label class="form-label fw-semibold">{{ label }}</label>
       <div class="text-muted small">
-        {{ help }} — <strong>{{ max }} max</strong> — {{ maxSizeMb }} Mo / fichier
+        {{ help }} · <strong>{{ max }} max</strong> · {{ maxSizeMb }} Mo / fichier
       </div>
     </div>
 

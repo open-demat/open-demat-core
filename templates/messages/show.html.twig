@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ message.subject }} · Messages{% endblock %}
+{% block body %}
+  <a class="btn btn-outline-secondary mb-3" href="{{ path('core_messages_index') }}">Retour aux messages</a>
+  <h1 class="h3">{{ message.subject }}</h1>
+  <p class="text-muted">{{ message.created_at|date('d/m/Y H:i') }}{% if message.bundle_key %} · {{ message.bundle_key }}{% endif %}</p>
+  {% if not message.read_at %}
+    <form method="post" action="{{ path('core_messages_read', {id: message.id}) }}" class="mb-3">
+      <input type="hidden" name="_token" value="{{ csrf_token('message_read_' ~ message.id) }}">
+      <button class="btn btn-primary" type="submit">Marquer comme lu</button>
+    </form>
+  {% else %}
+    <p class="small text-muted">Lu le {{ message.read_at|date('d/m/Y H:i') }}</p>
+  {% endif %}
+  <iframe title="Contenu du message" src="{{ path('core_messages_body', {id: message.id}) }}" sandbox="allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer" class="w-100 border rounded bg-white" style="height: 70vh;"></iframe>
+{% endblock %}

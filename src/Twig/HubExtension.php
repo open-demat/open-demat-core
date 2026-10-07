@@ -38,6 +38,20 @@ class HubExtension extends AbstractExtension implements GlobalsInterface
 
         return [
             'app_hub_apps' => $this->registry->all(),
+            'app_core_version' => $this->getCoreVersion(),
         ];
+    }
+
+    private function getCoreVersion(): string
+    {
+        $versionFile = \dirname(__DIR__, 2) . '/VERSION';
+
+        if (!is_file($versionFile)) {
+            return 'dev';
+        }
+
+        $version = trim((string) file_get_contents($versionFile));
+
+        return $version !== '' ? $version : 'dev';
     }
 }

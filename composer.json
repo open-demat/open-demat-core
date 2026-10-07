@@ -13,6 +13,8 @@
     "dompdf/dompdf": "^3.1",
     "ecphp/cas-bundle": "^3.0.4",
     "ecphp/cas-lib": "^3",
+    "guzzlehttp/guzzle": "^7.15.2",
+    "league/commonmark": "^2.9",
     "league/flysystem-aws-s3-v3": "^3.30",
     "league/flysystem-bundle": "^3.6",
     "loophp/psr-http-message-bridge-bundle": "^1.2",
@@ -43,7 +45,9 @@
     "symfony/validator": "^7.4",
     "symfony/var-exporter": "^7.4",
     "symfony/workflow": "^7.4",
-    "symfony/yaml": "^7.4"
+    "symfony/yaml": "^7.4",
+    "twig/extra-bundle": "^3.24",
+    "twig/markdown-extra": "^3.28"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,

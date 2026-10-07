@@ -1,0 +1,186 @@
+{# @OpenDemat/core/templates/_partials/_profile_documents_picker.html.twig #}
+{% set pickerId = picker_id|default('profile-docs') %}
+{% set maxAttachments = max_attachments|default(10) %}
+{% set loadLabel = load_label|default('Charger') %}
+{% set title = title|default('Mes fichiers personnels') %}
+
+<style>
+  .profile-docs-picker{
+    border: 1px solid var(--open-demat-border, #e5e7eb);
+    border-radius: var(--open-demat-radius, 18px);
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 10px 22px rgba(0,0,0,.05);
+  }
+
+  .profile-docs-picker .profile-docs-head{
+    padding: .9rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    cursor: pointer;
+    user-select: none;
+    background: #fff;
+  }
+
+  .profile-docs-picker .profile-docs-head .fw-bold{
+    font-weight: 700;
+    color: var(--open-demat-text, #1f2937);
+    line-height: 1.2;
+  }
+
+  .profile-docs-picker .profile-docs-head .text-muted{
+    color: var(--open-demat-muted, #6b7280) !important;
+    font-size: .875rem;
+  }
+
+  .profile-docs-picker .profile-docs-body{
+    border-top: 1px solid var(--open-demat-border, #e5e7eb);
+    padding: .9rem 1rem 1rem;
+    background: #fff;
+  }
+
+  .profile-docs-picker[data-open="0"] .profile-docs-body{
+    display: none !important;
+  }
+
+  .profile-docs-picker[data-open="1"] .profile-docs-body{
+    display: block !important;
+  }
+
+  .profile-docs-picker [data-role="search"],
+  .profile-docs-picker [data-role="filter-cat"]{
+    border-radius: 12px;
+  }
+
+  .profile-docs-picker [data-role="status"]{
+    color: var(--open-demat-muted, #6b7280) !important;
+    font-size: .875rem;
+  }
+
+  .profile-docs-picker [data-role="list"] .list-group-item{
+    border-radius: 12px !important;
+    border: 1px solid var(--open-demat-border, #e5e7eb);
+    margin-bottom: .5rem;
+    min-width: 0;
+  }
+
+  .profile-docs-picker [data-role="list"] .list-group-item:last-child{
+    margin-bottom: 0;
+  }
+
+  .profile-docs-picker .doc-row{
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: .75rem;
+    align-items: start;
+    min-width: 0;
+  }
+
+  .profile-docs-picker .doc-row > div:last-child{
+    min-width: 0;
+  }
+
+  .profile-docs-picker .doc-name{
+    font-weight: 700;
+    color: var(--open-demat-text, #1f2937);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .profile-docs-picker .doc-meta{
+    color: var(--open-demat-muted, #6b7280);
+    font-size: .875rem;
+    margin-top: .2rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .profile-docs-picker .doc-size{
+    display: inline-block;
+    margin-top: .25rem;
+    color: var(--open-demat-muted, #6b7280);
+    font-size: .875rem;
+  }
+
+  .profile-docs-picker .badge-cat{
+    font-weight: 700;
+    border-radius: 999px;
+  }
+
+  .profile-docs-picker .btn{
+    border-radius: 12px;
+  }
+
+  .profile-docs-picker .form-check-input{
+    margin-top: .2rem;
+  }
+
+  @media (max-width: 540px){
+    .profile-docs-picker .profile-docs-head{
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+
+    .profile-docs-picker .profile-docs-head > div:first-child{
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .profile-docs-picker .profile-docs-head > .d-flex.gap-2{
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
+</style>
+
+<div class="app-subcard profile-docs-picker"
+     id="{{ pickerId }}"
+     data-profile-url="{{ profile_url|default('/profile/me/ajax') }}"
+     data-max-attachments="{{ maxAttachments }}"
+     data-input-name="{{ input_name|default('profile_documents[]') }}"
+     data-open="0">
+
+  <div class="profile-docs-head" role="button" tabindex="0" aria-expanded="false">
+    <div>
+      <div class="fw-bold">{{ title }}</div>
+      <div class="text-muted small">
+        Sélection : <strong><span data-role="selected-count">0</span>/{{ maxAttachments }}</strong>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-outline-secondary btn-sm" data-action="load">
+        {{ loadLabel }}
+      </button>
+      <button type="button" class="btn btn-outline-secondary btn-sm" data-action="clear" disabled>
+        Effacer
+      </button>
+    </div>
+  </div>
+
+  <div class="profile-docs-body" data-role="body" style="display:none;">
+    <div class="row g-2 mb-2">
+      <div class="col-12">
+        <input type="search" class="form-control" data-role="search" placeholder="Rechercher un fichier…" disabled>
+      </div>
+      <div class="col-12">
+        <select class="form-select" data-role="filter-cat" disabled>
+          <option value="">Toutes catégories</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="text-muted small mb-2" data-role="status" style="display:none;"></div>
+
+    <div class="list-group" data-role="list">
+      <div class="list-group-item text-muted small">
+        Clique sur <strong>“{{ loadLabel }}”</strong> pour afficher tes documents.
+      </div>
+    </div>
+
+    <div data-role="hidden"></div>
+  </div>
+</div>

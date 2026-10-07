@@ -192,8 +192,16 @@ body.has-fixed-header main{
 .app-icon{
   display:inline-flex; align-items:center; justify-content:center;
   width:48px; height:48px; border-radius:10px;
-  background: color-mix(in srgb, var(--open-demat-red) 12%, transparent);
-  border:1px solid color-mix(in srgb, var(--open-demat-red) 30%, #000 0%);
+  background:#fff;
+  border:1px solid var(--border);
+}
+.app-icon img{
+  max-width:90%;
+  max-height:90%;
+  object-fit:contain;
+  background:#fff;
+  border-radius:8px;
+  padding:3px;
 }
 
 /* Bouton Open Demat */
@@ -283,6 +291,13 @@ body.has-fixed-header main{
   color:#fff;
   background-color: rgba(255,255,255,.22);
   font-weight: 700;
+}
+.sidebar-app-icon{
+  background:#fff;
+  border:1px solid rgba(255,255,255,.9);
+  border-radius:8px;
+  padding:3px;
+  object-fit:contain;
 }
 .sidebar-open-demat hr{
   border-color: rgba(255,255,255,.35);

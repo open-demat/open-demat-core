@@ -48,6 +48,7 @@ security:
     - { path: ^/cas/force, roles: PUBLIC_ACCESS }
     - { path: ^/llogout, roles: PUBLIC_ACCESS }
 
+    - { path: ^/messages, roles: IS_AUTHENTICATED_FULLY }
     - { path: ^/profile, roles: ROLE_USER }
     - { attributes: { '_route': '^open_demat_ldap_personnel_search$' }, roles: ROLE_USER }
 

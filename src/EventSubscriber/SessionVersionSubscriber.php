@@ -21,6 +21,7 @@
 
 namespace OpenDemat\Core\EventSubscriber;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -41,6 +42,7 @@ class SessionVersionSubscriber implements EventSubscriberInterface
         private readonly RequestStack $requestStack,
         private readonly RouterInterface $router,
         private readonly UserRepository $userRepository,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -48,7 +50,29 @@ class SessionVersionSubscriber implements EventSubscriberInterface
     {
         return [
             KernelEvents::REQUEST => ['onKernelRequest', 5],
+            LogoutEvent::class => 'onLogout',
         ];
+    }
+
+    public function onLogout(LogoutEvent $event): void
+    {
+        $token = $event->getToken();
+        if (!$token) {
+            return;
+        }
+
+        $tokenUser = $token->getUser();
+        if (!$tokenUser instanceof User || null === $tokenUser->getId()) {
+            return;
+        }
+
+        $freshUser = $this->userRepository->find($tokenUser->getId());
+        if (!$freshUser instanceof User) {
+            return;
+        }
+
+        $freshUser->bumpSessionVersion();
+        $this->entityManager->flush();
     }
 
     public function onKernelRequest(RequestEvent $event): void

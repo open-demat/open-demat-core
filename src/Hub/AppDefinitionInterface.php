@@ -21,6 +21,7 @@
 
 namespace OpenDemat\Core\Hub;
 
+#[\Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag('open_demat.hub.app_definition')]
 interface AppDefinitionInterface
 {
     public function getKey(): string;

@@ -18,6 +18,7 @@ class StaticDocumentService
         private readonly EntityManagerInterface $em,
         private readonly FilesystemOperator $documentsStorage,
         private readonly string $s3Bucket,
+        private readonly AttachmentService $attachmentService,
     ) {
     }
 
@@ -147,7 +148,7 @@ class StaticDocumentService
                 $this->asciiFallback($filename)
             )
         );
-        $response->headers->set('Cache-Control', 'public, max-age=3600');
+        $response->headers->set('Cache-Control', 'private, no-store');
 
         return $response;
     }
@@ -185,9 +186,7 @@ class StaticDocumentService
     /** @return resource|false */
     private function openDocumentStream(StaticDocument $staticDocument)
     {
-        return $this->documentsStorage->readStream(
-            'documents/' . $staticDocument->getDocument()->getId()->toRfc4122()
-        );
+        return $this->attachmentService->openStream($staticDocument->getDocument());
     }
 
     private function asciiFallback(string $name): string

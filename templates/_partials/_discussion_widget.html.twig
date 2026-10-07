@@ -1,0 +1,210 @@
+{#
+  Widget de discussion SMS générique.
+
+  Variables requises :
+    history    array   Tableau [{auteur, message, date}] — résultat de entity.discussionMessages
+    self_role  string  Rôle dont les bulles s'alignent à droite (ex. 'ETUDIANT', 'VALIDATEUR')
+
+  Variables optionnelles :
+    title      string  Titre affiché dans l'en-tête   — défaut : 'Discussion'
+    widget_id  string  Suffixe de l'id DOM du conteneur — défaut : 'discussion'
+    show_author bool   Affiche entry.auteur dans chaque bulle — défaut : false
+    height     string  Hauteur du fil de messages — défaut : '220px'
+    compact    bool    Réduit les espacements pour une intégration en tableau — défaut : false
+    form       null | {
+                 field_name   string  Attribut name de la textarea
+                 placeholder  string  Placeholder de la textarea
+                 textarea_rows int    Nombre de lignes de la zone de saisie — défaut : 2
+                 action       string  URL du POST — si absent : textarea embarquée dans un form extérieur
+                 csrf_token   string  Valeur du token CSRF  — requis si action est défini
+                 csrf_field_name string Nom du champ CSRF — défaut : '_token'
+                 embedded     bool    Envoi autonome sans balise form (si le widget est déjà dans un form)
+                 on_click     string  Expression JS à appeler sur le bouton Envoyer (mode embarqué)
+               }
+               null → widget lecture seule (pas de saisie)
+#}
+{% set _title     = title    ?? 'Discussion' %}
+{% set _widget_id = widget_id ?? 'discussion' %}
+{% set _form      = form ?? null %}
+{% set _show_author = show_author ?? false %}
+{% set _height = height ?? '220px' %}
+{% set _compact = compact ?? false %}
+
+<style>
+  .open-demat-discussion-widget { background: #fff; overflow: hidden; }
+  .open-demat-discussion-messages {
+    height: var(--open-demat-discussion-height, 220px); overflow-y: auto;
+    display: flex; flex-direction: column; gap: 6px;
+    scroll-behavior: smooth;
+  }
+  .open-demat-discussion-row { display: flex; }
+  .open-demat-discussion-row-self  { justify-content: flex-end; }
+  .open-demat-discussion-row-other { justify-content: flex-start; }
+  .open-demat-discussion-bubble {
+    max-width: 80%; padding: 7px 11px; border-radius: 16px;
+    font-size: .85rem; word-break: break-word; line-height: 1.4;
+  }
+  .open-demat-discussion-bubble-self {
+    background: #0d6efd; color: #fff;
+    border-bottom-right-radius: 3px;
+  }
+  .open-demat-discussion-bubble-other {
+    background: #fff3cd; color: #664d03;
+    border: 1px solid #ffc107; border-bottom-left-radius: 3px;
+  }
+  .open-demat-discussion-time {
+    font-size: .67rem; opacity: .65; margin-top: 3px;
+  }
+  .open-demat-discussion-author {
+    font-size: .72rem; font-weight: 700; opacity: .82; margin-bottom: 3px;
+  }
+  .open-demat-discussion-content { white-space: pre-wrap; }
+  .open-demat-discussion-composer textarea { flex: 1 1 0; min-width: 0; }
+  .open-demat-discussion-status { flex-basis: 100%; }
+  .open-demat-discussion-widget-compact { margin-bottom: 0 !important; }
+  .open-demat-discussion-widget-compact .open-demat-discussion-header { padding: .35rem .5rem !important; }
+  .open-demat-discussion-widget-compact .open-demat-discussion-messages { padding: .5rem !important; }
+  .open-demat-discussion-widget-compact .open-demat-discussion-bubble {
+    max-width: 95%; padding: 5px 8px; font-size: .78rem;
+  }
+  .open-demat-discussion-widget-compact .open-demat-discussion-composer { padding: .4rem !important; }
+  .open-demat-discussion-widget-compact .open-demat-discussion-composer textarea {
+    min-height: 32px !important; height: 32px; max-height: 64px;
+    padding: .3rem .5rem; line-height: 1.2;
+  }
+  .open-demat-discussion-row-self  .open-demat-discussion-time { text-align: right; }
+  .open-demat-discussion-row-other .open-demat-discussion-time { text-align: left; }
+</style>
+
+<div class="border rounded mb-3 open-demat-discussion-widget{{ _compact ? ' open-demat-discussion-widget-compact' : '' }}" style="--open-demat-discussion-height: {{ _height }}">
+  <div class="border-bottom px-3 py-2 bg-warning-subtle d-flex align-items-center open-demat-discussion-header">
+    <span class="fw-semibold small">💬 {{ _title }}</span>
+  </div>
+
+  <div class="open-demat-discussion-messages p-3" id="open-demat-discussion-messages-{{ _widget_id }}">
+    {% if history is empty %}
+      <p class="text-muted small text-center my-auto py-3 mb-0">Aucun message.</p>
+    {% else %}
+      {% for entry in history %}
+        {% set _author = entry.auteur|default('') %}
+        {% set _is_self = (_author == self_role) or (_author starts with (self_role ~ ' - ')) or (_author starts with (self_role ~ ' · ')) %}
+        <div class="open-demat-discussion-row {{ _is_self ? 'open-demat-discussion-row-self' : 'open-demat-discussion-row-other' }}">
+          <div class="open-demat-discussion-bubble {{ _is_self ? 'open-demat-discussion-bubble-self' : 'open-demat-discussion-bubble-other' }}">
+            {% if _show_author and _author %}
+              <div class="open-demat-discussion-author">{{ _author }}</div>
+            {% endif %}
+            <div class="open-demat-discussion-content">{{ entry.message }}</div>
+            <div class="open-demat-discussion-time">{{ entry.date }}</div>
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  {% if _form is not null %}
+    {% set _has_action = _form.action is defined and _form.action %}
+    {% set _embedded_action = _has_action and (_form.embedded ?? false) %}
+    {% if _has_action and not _embedded_action %}<form method="post"
+                                  action="{{ _form.action }}"
+                                  class="border-top d-flex flex-wrap gap-1 p-2 open-demat-discussion-composer"
+                                  data-open-demat-discussion-form
+                                  data-open-demat-discussion-target="open-demat-discussion-messages-{{ _widget_id }}">
+      <input type="hidden" name="{{ _form.csrf_field_name ?? '_token' }}" value="{{ _form.csrf_token }}">{% elseif _embedded_action %}<div class="border-top d-flex flex-wrap gap-1 p-2 open-demat-discussion-composer"
+           data-open-demat-discussion-form
+           data-open-demat-discussion-action="{{ _form.action }}"
+           data-open-demat-discussion-method="post"
+           data-open-demat-discussion-target="open-demat-discussion-messages-{{ _widget_id }}">
+      <input type="hidden" name="{{ _form.csrf_field_name ?? '_token' }}" value="{{ _form.csrf_token }}">{% else %}<div class="border-top d-flex flex-wrap gap-1 p-2 open-demat-discussion-composer">{% endif %}
+      <textarea name="{{ _form.field_name }}"
+                rows="{{ _form.textarea_rows ?? 2 }}"
+                class="form-control form-control-sm"
+                placeholder="{{ _form.placeholder ?? 'Votre message…' }}"
+                style="resize: none"></textarea>
+      <button
+        {% if _has_action and not _embedded_action %}type="submit"{% elseif _embedded_action %}type="button" data-open-demat-discussion-submit{% else %}type="button" onclick="{{ _form.on_click ?? '' }}"{% endif %}
+        class="btn btn-primary btn-sm align-self-end px-3"
+        title="Envoyer">↑</button>
+      {% if _has_action %}<div class="open-demat-discussion-status small text-danger mt-1 d-none" role="status" aria-live="polite"></div>{% endif %}
+    {% if _has_action and not _embedded_action %}</form>{% else %}</div>{% endif %}
+  {% endif %}
+</div>
+
+<script>
+(function () {
+  function scrollToLatest(messages) {
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function initializeDiscussionWidgets() {
+    document.querySelectorAll('[data-open-demat-discussion-form]').forEach(function (composer) {
+      if (composer.dataset.openDematDiscussionInitialized === 'true') return;
+      composer.dataset.openDematDiscussionInitialized = 'true';
+
+      var messages = document.getElementById(composer.dataset.openDematDiscussionTarget);
+      var textarea = composer.querySelector('textarea');
+      var submitButton = composer.querySelector('[type="submit"], [data-open-demat-discussion-submit]');
+      var status = composer.querySelector('.open-demat-discussion-status');
+
+      if (messages) scrollToLatest(messages);
+
+      async function sendMessage(event) {
+        event.preventDefault();
+        if (!messages || !textarea || !submitButton || textarea.value.trim() === '') return;
+
+        status.classList.add('d-none');
+        status.textContent = '';
+        submitButton.disabled = true;
+        submitButton.setAttribute('aria-busy', 'true');
+
+        try {
+          var payload = new FormData();
+          composer.querySelectorAll('[name]:not(:disabled)').forEach(function (field) {
+            payload.append(field.name, field.value);
+          });
+
+          var response = await fetch(composer.dataset.openDematDiscussionAction || composer.action, {
+            method: (composer.dataset.openDematDiscussionMethod || composer.method || 'post').toUpperCase(),
+            body: payload,
+            headers: {
+              'Accept': 'text/html',
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          });
+
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+
+          var html = await response.text();
+          var page = new DOMParser().parseFromString(html, 'text/html');
+          var updatedMessages = page.getElementById(composer.dataset.openDematDiscussionTarget);
+          if (!updatedMessages) throw new Error('Discussion absente de la réponse');
+
+          messages.innerHTML = updatedMessages.innerHTML;
+          textarea.value = '';
+          scrollToLatest(messages);
+          textarea.focus();
+        } catch (error) {
+          status.textContent = 'Le message n’a pas pu être envoyé. Veuillez réessayer.';
+          status.classList.remove('d-none');
+        } finally {
+          submitButton.disabled = false;
+          submitButton.removeAttribute('aria-busy');
+        }
+      }
+
+      if (composer.tagName === 'FORM') {
+        composer.addEventListener('submit', sendMessage);
+      } else {
+        submitButton.addEventListener('click', sendMessage);
+      }
+    });
+
+    document.querySelectorAll('.open-demat-discussion-messages').forEach(scrollToLatest);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeDiscussionWidgets);
+  } else {
+    initializeDiscussionWidgets();
+  }
+}());
+</script>

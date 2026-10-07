@@ -8,6 +8,7 @@ parameters:
   organization_logo_default: 'assets/img/open-demat-logo.png'
   s3.bucket: '%env(S3_BUCKET)%'
 
+  platform_help_url: '%env(default::PLATFORM_HELP_URL)%'
   admin_url: '%env(resolve:ADMIN_URL)%'
   organization_name: '%env(default::ORGANIZATION_NAME)%'
   organization_logo: '%env(default:organization_logo_default:ORGANIZATION_LOGO)%'
@@ -249,6 +250,11 @@ services:
         credentials:
           key: '%env(S3_ACCESS_KEY)%'
           secret: '%env(S3_SECRET_KEY)%'
+
+  OpenDemat\Core\Service\MinioStorage:
+    arguments:
+      $client: '@Aws\S3\S3Client'
+      $bucketName: '%s3.bucket%'
           
   OpenDemat\Core\Service\AttachmentService:
     arguments:
@@ -275,6 +281,7 @@ services:
             $requestStack: '@request_stack'
             $router: '@router'
             $userRepository: '@OpenDemat\Core\Repository\UserRepository'
+            $entityManager: '@doctrine.orm.entity_manager'
         tags:
             - { name: kernel.event_subscriber }
 

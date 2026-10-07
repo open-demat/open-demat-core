@@ -38,8 +38,8 @@ class UserDocument
 
     // Propriétaire du “vault”
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
-    private User $user;
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?User $user;
 
     // Fichier stocké (S3/Flysystem via Document)
     #[ORM\ManyToOne(targetEntity: Document::class)]
@@ -86,7 +86,7 @@ class UserDocument
 
     public function getId(): ?int { return $this->id; }
 
-    public function getUser(): User { return $this->user; }
+    public function getUser(): ?User { return $this->user; }
     public function getDocument(): Document { return $this->document; }
 
     public function getLabel(): ?string { return $this->label; }

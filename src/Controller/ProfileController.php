@@ -29,9 +29,12 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use OpenDemat\Core\Entity\Document;
 use OpenDemat\Core\Entity\User;
+use OpenDemat\Core\Entity\UserBundleProfile;
 use OpenDemat\Core\Entity\UserDocument;
 use OpenDemat\Core\Form\ProfileType;
 use OpenDemat\Core\Form\UserDocumentUploadType;
+use OpenDemat\Core\Hub\HubRegistry;
+use OpenDemat\Core\Repository\UserBundleProfileRepository;
 use OpenDemat\Core\Repository\UserDocumentRepository;
 
 #[Route('/profile', name: 'open_demat_core_profile_')]
@@ -45,6 +48,8 @@ class ProfileController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         UserDocumentRepository $userDocumentRepo,
+        UserBundleProfileRepository $bundleProfileRepo,
+        HubRegistry $hubRegistry,
         FilesystemOperator $documentsStorage,
     ): Response {
         // User sécurité -> User doctrine managé
@@ -161,13 +166,70 @@ class ProfileController extends AbstractController
         }
 
         $userDocs = $userDocumentRepo->findForUser($user);
+        $bundleProfiles = $bundleProfileRepo->findIndexedByBundleForUser($user);
 
         return $this->render('profile/index.html.twig', [
             'form' => $profileForm->createView(),
             'uploadForm' => $uploadForm->createView(),
             'userDocs' => $userDocs,
             'user' => $user,
+            'bundleApps' => $this->accessibleApps($hubRegistry),
+            'bundleProfiles' => $bundleProfiles,
         ]);
+    }
+
+    /** Uses the same role checks as the application menu, including inherited roles. */
+    private function accessibleApps(HubRegistry $hubRegistry): array
+    {
+        return array_values(array_filter($hubRegistry->all(), function (array $app): bool {
+            foreach ($app['roles'] ?? [] as $role) {
+                if ($this->isGranted($role)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }));
+    }
+
+    #[Route('/notifications', name: 'notifications', methods: ['POST'])]
+    public function notifications(
+        Request $request,
+        EntityManagerInterface $em,
+        UserBundleProfileRepository $bundleProfileRepo,
+        HubRegistry $hubRegistry,
+    ): Response {
+        $securityUser = $this->getUser();
+        if (!$securityUser instanceof User) {
+            throw $this->createAccessDeniedException('Utilisateur invalide.');
+        }
+
+        if (!$this->isCsrfTokenValid('bundle_notification_preferences', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('CSRF invalide.');
+        }
+
+        $user = $em->getRepository(User::class)->find($securityUser->getId());
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Utilisateur introuvable.');
+        }
+
+        $profiles = $bundleProfileRepo->findIndexedByBundleForUser($user);
+        $mutedKeys = $request->request->all('muted');
+
+        foreach ($this->accessibleApps($hubRegistry) as $app) {
+            $bundleKey = strtoupper((string) $app['key']);
+            $profile = $profiles[$bundleKey] ?? new UserBundleProfile($user, $bundleKey);
+            $profile->setNotificationsMuted(array_key_exists($bundleKey, $mutedKeys));
+
+            if ($profile->getId() === null) {
+                $em->persist($profile);
+            }
+        }
+
+        $em->flush();
+        $this->addFlash('success', 'Préférences de notification mises à jour.');
+
+        return $this->redirectToRoute('open_demat_core_profile_index');
     }
 
     #[Route('/documents/{id}/download', name: 'download', methods: ['GET'])]
@@ -192,7 +254,7 @@ class ProfileController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        if ($userDoc->getUser()->getId() !== $user->getId()) {
+        if ($userDoc->getUser()?->getId() !== $user->getId()) {
             throw $this->createAccessDeniedException('Accès interdit.');
         }
 
@@ -243,7 +305,7 @@ class ProfileController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        if ($userDoc->getUser()->getId() !== $user->getId()) {
+        if ($userDoc->getUser()?->getId() !== $user->getId()) {
             throw $this->createAccessDeniedException('Accès interdit.');
         }
 
@@ -365,7 +427,7 @@ class ProfileController extends AbstractController
                 // champs profil (à adapter à tes getters exacts)
                 'nom' => $user->getNom(),
                 'prenom' => $user->getPrenom(),
-                'tel' => $user->getTel(),
+                'tel' => $user->getTelephone(),
                 'fonction' => $user->getFonction(),
                 'service' => $user->getService(),
                 'site' => $user->getSite(),

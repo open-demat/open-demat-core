@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mes messages{% endblock %}
+{% block body %}
+  <h1 class="h3">Mes messages <span class="badge bg-danger">{{ unreadCount }} non lu{{ unreadCount > 1 ? 's' : '' }}</span></h1>
+  <p class="text-muted">Retrouvez ici vos notifications, même lorsque les e-mails de suivi sont désactivés ou ne vous parviennent pas.</p>
+  <div class="list-group mb-3">
+    {% for message in messages %}
+      <a class="list-group-item list-group-item-action" href="{{ path('core_messages_show', {id: message.id}) }}">
+        <div class="d-flex justify-content-between align-items-center gap-2">
+          <span class="{{ message.read_at ? '' : 'fw-bold' }}">{{ message.subject }}</span>
+          {% if not message.read_at %}<span class="badge bg-primary">Non lu</span>{% endif %}
+        </div>
+        <small class="text-muted">{{ message.created_at|date('d/m/Y H:i') }}{% if message.bundle_key %} · {{ message.bundle_key }}{% endif %}</small>
+      </a>
+    {% else %}
+      <div class="list-group-item text-muted">Vous n’avez aucun message pour le moment.</div>
+    {% endfor %}
+  </div>
+  <nav aria-label="Pages des messages" class="d-flex gap-2">
+    {% if page > 1 %}<a class="btn btn-outline-secondary" href="{{ path('core_messages_index', {page: page - 1}) }}">Précédente</a>{% endif %}
+    {% if hasNext %}<a class="btn btn-outline-secondary" href="{{ path('core_messages_index', {page: page + 1}) }}">Suivante</a>{% endif %}
+  </nav>
+{% endblock %}

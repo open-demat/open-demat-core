@@ -91,7 +91,7 @@
 
           {% if filter_label_selector is defined and filter_label_selector %}
             <div class="mt-2 small text-muted">
-              Filtre actif : <span class="fw-semibold js-filter-label">—</span>
+              Filtre actif : <span class="fw-semibold js-filter-label">·</span>
             </div>
           {% endif %}
         </div>
@@ -198,10 +198,7 @@
     }
 
     function buildSearchString(el) {
-      const fieldsAttr = (config.search && config.search.fieldsAttr)
-        ? config.search.fieldsAttr
-        : 'data-search';
-
+      const fieldsAttr = (config.search && config.search.fieldsAttr) ? config.search.fieldsAttr : 'data-search';
       const ds = el.getAttribute(fieldsAttr);
 
       if (ds && ds.trim().length) {
@@ -458,18 +455,6 @@
       }
 
       const perPage = parseInt(currentPerPage, 10) || 10;
-      const totalPages = Math.max(1, Math.ceil(visibleList.length / perPage));
-
-      currentPage = parseInt(currentPage, 10) || 1;
-
-      if (currentPage > totalPages) {
-        currentPage = totalPages;
-      }
-
-      if (currentPage < 1) {
-        currentPage = 1;
-      }
-
       const start = (currentPage - 1) * perPage;
       const end = start + perPage;
       const paginatedSet = new Set(visibleList.slice(start, end));
@@ -491,11 +476,26 @@
       const visibleTableItems = getFilteredItems(tableItems);
       const visibleCardItems = getFilteredItems(cardItems);
 
-      applyPagination(tableItems, visibleTableItems);
-      applyPagination(cardItems, visibleCardItems);
-
       const totalVisible = (tableItems.length ? visibleTableItems.length : 0)
         + (cardItems.length ? visibleCardItems.length : 0);
+
+      if (paginationEnabled && currentPerPage !== 'ALL') {
+        const perPage = parseInt(currentPerPage, 10) || 10;
+        const totalPages = Math.max(1, Math.ceil(totalVisible / perPage));
+
+        currentPage = parseInt(currentPage, 10) || 1;
+
+        if (currentPage > totalPages) {
+          currentPage = totalPages;
+        }
+
+        if (currentPage < 1) {
+          currentPage = 1;
+        }
+      }
+
+      applyPagination(tableItems, visibleTableItems);
+      applyPagination(cardItems, visibleCardItems);
 
       const emptyState = resolveEmptyState();
       if (emptyState) {

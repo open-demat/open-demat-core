@@ -6,6 +6,7 @@ doctrine:
     schema_filter: '~^(?!f3sct\.|messenger_messages$|doctrine_migration_versions$)~'
     types:
       uuid: Symfony\Bridge\Doctrine\Types\UuidType
+      process_attachment_ref: OpenDemat\Core\Doctrine\Type\ProcessAttachmentRefType
     mapping_types:
       uuid: uuid
 

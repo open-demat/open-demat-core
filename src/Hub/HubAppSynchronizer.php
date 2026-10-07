@@ -32,7 +32,8 @@ final class HubAppSynchronizer
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly UrlGeneratorInterface $urlGenerator,
-    ) {}
+    ) {
+    }
 
     /**
      * @param iterable<AppDefinitionInterface> $definitions
@@ -42,7 +43,6 @@ final class HubAppSynchronizer
         if ($this->synced) {
             return;
         }
-        $this->synced = true;
 
         $repo = $this->em->getRepository(Application::class);
 
@@ -55,7 +55,12 @@ final class HubAppSynchronizer
             $existing[$app->getKey()] = $app;
         }
 
+        $uniqueDefinitions = [];
         foreach ($definitions as $def) {
+            $uniqueDefinitions[$def->getKey()] = $def;
+        }
+
+        foreach ($uniqueDefinitions as $def) {
             $key       = $def->getKey();
             $routeName = $def->getRoute();
 
@@ -99,6 +104,11 @@ final class HubAppSynchronizer
                     ->setBaseUrl($url);
 
                 $this->em->persist($app);
+
+                // Important : on met à jour l’index local pour éviter
+                // une collision Doctrine si la même clé réapparaît.
+                $existing[$key] = $app;
+
                 continue;
             }
 
@@ -123,9 +133,7 @@ final class HubAppSynchronizer
 
             $appRoles = $app->getRoles();
             if (is_array($appRoles)) {
-                $tmp = $appRoles;
-                sort($tmp);
-                $appRoles = $tmp;
+                sort($appRoles);
             }
 
             if ($appRoles !== $defRoles) {
@@ -143,7 +151,8 @@ final class HubAppSynchronizer
                 $updated = true;
             }
 
-            // IMPORTANT : on ne touche pas à enabled ici (DB reste maître)
+            // IMPORTANT : on ne touche pas à enabled ici.
+            // La base de données reste maître pour l’activation fonctionnelle.
 
             if ($updated) {
                 $this->em->persist($app);
@@ -151,5 +160,8 @@ final class HubAppSynchronizer
         }
 
         $this->em->flush();
+
+        // On marque comme synchronisé seulement après une synchro réussie.
+        $this->synced = true;
     }
 }

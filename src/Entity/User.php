@@ -217,6 +217,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setRoles(array $roles): self
     {
+        $roles = array_values(array_unique($roles));
+        $currentRoles = array_values(array_unique($this->roles));
+        $sortedRoles = $roles;
+        $sortedCurrentRoles = $currentRoles;
+
+        sort($sortedRoles);
+        sort($sortedCurrentRoles);
+
+        if ($this->id !== null && $sortedCurrentRoles !== $sortedRoles) {
+            $this->bumpSessionVersion();
+        }
+
         $this->roles = $roles;
         return $this;
     }

@@ -197,7 +197,7 @@ class AttachmentService
             }
 
             // ✅ sécurité : le doc doit appartenir au demandeur
-            if ($ud->getUser()->getId() !== $requester->getId()) {
+            if ($ud->getUser()?->getId() !== $requester->getId()) {
                 continue; // ou throw AccessDenied, mais en batch c'est chiant
             }
 
@@ -276,6 +276,61 @@ class AttachmentService
     public function openStream(Document $document)
     {
         $key = 'documents/' . $document->getId()->toRfc4122();
-        return $this->documentsStorage->readStream($key);
+        $content = $this->documentsStorage->read($key);
+
+        $stream = fopen('php://temp', 'w+b');
+        if ($stream === false) {
+            throw new \RuntimeException('Impossible de créer le flux temporaire.');
+        }
+
+        fwrite($stream, $content);
+        rewind($stream);
+
+        return $stream;
     }
+    /**
+     * Crée un Document + stocke le contenu dans S3.
+     * Ne crée PAS de ProcessAttachment — pour les bundles Style A (FEBRH, PdP).
+     * Le flush est laissé à la charge du code appelant.
+     */
+    public function storeDocument(
+        string $content,
+        string $mimeType,
+        string $originalFilename,
+        ?User $uploadedBy = null,
+    ): Document {
+        $doc = new Document(
+            originalName: $originalFilename,
+            mimeType: $mimeType,
+            sizeBytes: strlen($content),
+            bucket: $this->s3Bucket,
+            checksumSha256: hash('sha256', $content),
+            uploadedBy: $uploadedBy,
+        );
+
+        $key = 'documents/' . $doc->getId()->toRfc4122();
+        $this->documentsStorage->write($key, $content, ['ContentType' => $mimeType]);
+        $this->em->persist($doc);
+
+        return $doc;
+    }
+
+    /**
+     * Supprime le fichier S3 et l'entité Document.
+     * À utiliser pour les bundles Style A (FEBRH, PdP) — pas de ProcessAttachment à gérer.
+     * Le flush est laissé à la charge du code appelant.
+     */
+    public function deleteDocument(Document $document): void
+    {
+        $key = 'documents/' . $document->getId()->toRfc4122();
+        try {
+            if ($this->documentsStorage->fileExists($key)) {
+                $this->documentsStorage->delete($key);
+            }
+        } catch (\Throwable) {
+            // fichier déjà absent — on continue
+        }
+        $this->em->remove($document);
+    }
+
 }

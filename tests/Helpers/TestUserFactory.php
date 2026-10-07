@@ -9,6 +9,7 @@ final class TestUserFactory
 {
     public static function createUser(EntityManagerInterface $em, string $username, array $roles = ['ROLE_USER']): User
     {
+        $username .= '-' . bin2hex(random_bytes(4));
         $u = new User();
 
         // Adapte si ton entity a d'autres champs obligatoires
