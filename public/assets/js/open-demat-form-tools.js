@@ -342,7 +342,7 @@ window.OpenDematFormTools = (() => {
 
     resetChoice();
   }
-  
+
   return {
     prefillFields,
     initProfileDocumentsPicker,
